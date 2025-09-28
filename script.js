@@ -239,7 +239,8 @@ if (loginFormOverlay) {
             if (loginModal) loginModal.classList.add('hidden');
             loginFormOverlay.reset();
             if (loginErrorMessage) loginErrorMessage.classList.add('hidden');
-            window.location.href = '/admin';
+            // Stay on homepage after successful login (no redirect)
+            // Header buttons (Login/Dashboard/Logout) will auto-update via onAuthStateChanged.
         } catch (error) {
             if (loginErrorMessage) {
                 loginErrorMessage.textContent = "Email atau password salah.";
