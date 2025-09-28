@@ -453,30 +453,26 @@ if (articleContainer) { // Check if on news-detail.html
 // --- /struktural.html specific logic ---
 const strukturKonten = document.getElementById('struktur-konten');
 if (strukturKonten) { // Check if on struktural.html
-    async function loadCabinet() {
-        const docRef = doc(db, "cabinet", "current_cabinet");
-        try {
-            const docSnap = await getDoc(docRef);
-            if (docSnap.exists()) {
-                const data = docSnap.data();
-                for (const key in data) {
-                    const element = document.getElementById(key);
-                    if (element) {
-                        if (Array.isArray(data[key])) {
-                            element.innerHTML = data[key].map(name => `<span>${name}</span>`).join('');
-                        } else {
-                            element.textContent = data[key];
-                        }
+    const cabinetDocRefPublic = doc(db, "cabinet", "current_cabinet");
+    onSnapshot(cabinetDocRefPublic, (docSnap) => {
+        if (docSnap.exists()) {
+            const data = docSnap.data();
+            for (const key in data) {
+                const element = document.getElementById(key);
+                if (element) {
+                    if (Array.isArray(data[key])) {
+                        element.innerHTML = data[key].map(name => `<span>${name}</span>`).join('');
+                    } else {
+                        element.textContent = data[key];
                     }
                 }
-            } else {
-                console.log("Cabinet document does not exist!");
             }
-        } catch (error) {
-            console.error("Error loading cabinet:", error);
+        } else {
+            console.log("Cabinet document does not exist!");
         }
-    }
-    loadCabinet();
+    }, (error) => {
+        console.error("Error loading cabinet:", error);
+    });
 }
 
 // --- /admin.html specific logic ---
@@ -498,6 +494,9 @@ const cabinetForm = document.getElementById('cabinet-form');
 const cabinetStatus = document.getElementById('cabinet-status');
 
 if (dashboardSection) { // Check if on admin.html
+    // Cabinet real-time listener unsubscribe holder
+    let cabinetUnsub = null;
+
     // --- TAB SWITCHING ---
     tabs.forEach(tab => {
         tab.addEventListener('click', () => {
@@ -505,16 +504,19 @@ if (dashboardSection) { // Check if on admin.html
                 t.classList.remove('text-violet-600', 'border-violet-600');
                 t.classList.add('text-gray-500', 'hover:text-gray-700', 'hover:border-gray-300');
             });
-            contents.forEach(c => c.classList.add('hidden'));
+            contents.forEach(c => { c.classList.add('hidden'); c.classList.remove('active'); });
 
             tab.classList.add('text-violet-600', 'border-violet-600');
             tab.classList.remove('text-gray-500', 'hover:text-gray-700', 'hover:border-gray-300');
 
             const contentId = `content-${tab.id.split('-')[1]}`;
-            document.getElementById(contentId).classList.remove('hidden');
+            const target = document.getElementById(contentId);
+            if (target) { target.classList.remove('hidden'); target.classList.add('active'); }
 
+            // stop previous cabinet listener when changing tabs
+            if (typeof cabinetUnsub === 'function') { cabinetUnsub(); cabinetUnsub = null; }
             if (tab.id === 'tab-gallery') loadGalleryForAdmin();
-            if (tab.id === 'tab-cabinet') setTimeout(() => loadCabinetData(), 100);
+            if (tab.id === 'tab-cabinet') startCabinetListener();
         });
     });
 
@@ -524,6 +526,9 @@ if (dashboardSection) { // Check if on admin.html
             if (loginSection) loginSection.classList.add('hidden');
             if (dashboardSection) dashboardSection.classList.remove('hidden');
             loadNewsForAdmin();
+            // Ensure default tab content is visible
+            const newsContent = document.getElementById('content-news');
+            if (newsContent) { newsContent.classList.add('active'); newsContent.classList.remove('hidden'); }
         } else {
             if (loginSection) loginSection.classList.remove('hidden');
             if (dashboardSection) dashboardSection.classList.add('hidden');
@@ -649,12 +654,12 @@ if (dashboardSection) { // Check if on admin.html
 
     // --- CABINET MANAGEMENT ---
     const cabinetDocRef = doc(db, "cabinet", "current_cabinet");
-    async function loadCabinetData() {
+    function startCabinetListener() {
+        if (typeof cabinetUnsub === 'function') { cabinetUnsub(); cabinetUnsub = null; }
         if (cabinetStatus) cabinetStatus.textContent = "Memuat data...";
-        try {
-            const docSnap = await getDoc(cabinetDocRef);
+        cabinetUnsub = onSnapshot(cabinetDocRef, (docSnap) => {
             if (docSnap.exists()) {
-                const data = docSnap.data();
+                const data = docSnap.data() || {};
                 for (const key in data) {
                     const element = document.getElementById(key);
                     if (element) {
@@ -664,17 +669,16 @@ if (dashboardSection) { // Check if on admin.html
                 }
                 if (cabinetStatus) cabinetStatus.textContent = "";
             } else {
-                // If document doesn't exist, set empty values
-                const inputs = cabinetForm.querySelectorAll('input[type="text"], textarea');
-                inputs.forEach(input => {
-                    input.value = '';
-                });
+                if (cabinetForm) {
+                    const inputs = cabinetForm.querySelectorAll('input[type="text"], textarea');
+                    inputs.forEach(input => { input.value = ''; });
+                }
                 if (cabinetStatus) cabinetStatus.textContent = "Dokumen kabinet belum ada. Isi form dan simpan untuk membuat.";
             }
-        } catch (error) { 
-            console.error("Error loading cabinet data:", error);
+        }, (error) => {
+            console.error("Error listening cabinet data:", error);
             if (cabinetStatus) cabinetStatus.textContent = "Gagal memuat data kabinet.";
-        }
+        });
     }
     if (cabinetForm) {
         cabinetForm.addEventListener('submit', async (e) => {
