@@ -483,7 +483,7 @@ if (strukturKonten) { // Check if on struktural.html
 const loginSection = document.getElementById('login-section');
 const dashboardSection = document.getElementById('dashboard-section');
 const loginForm = document.getElementById('login-form');
-const tabs = document.querySelectorAll('.tab-btn');
+const tabs = document.querySelectorAll('.admin-tab-btn');
 const contents = document.querySelectorAll('.tab-content');
 const addNewsFormAdmin = document.getElementById('add-news-form'); // Renamed to avoid conflict
 const successMessage = document.getElementById('success-message');
@@ -513,8 +513,8 @@ if (dashboardSection) { // Check if on admin.html
             const contentId = `content-${tab.id.split('-')[1]}`;
             document.getElementById(contentId).classList.remove('hidden');
 
-        if (tab.id === 'tab-gallery') loadGalleryForAdmin();
-        if (tab.id === 'tab-cabinet') setTimeout(() => loadCabinetData(), 100);
+            if (tab.id === 'tab-gallery') loadGalleryForAdmin();
+            if (tab.id === 'tab-cabinet') setTimeout(() => loadCabinetData(), 100);
         });
     });
 
@@ -533,7 +533,12 @@ if (dashboardSection) { // Check if on admin.html
         loginForm.addEventListener('submit', (e) => {
             e.preventDefault();
             signInWithEmailAndPassword(auth, e.target.elements['email-input'].value, e.target.elements['password-input'].value)
-                .then(() => { window.location.href = '/index'; })
+                .then(() => { 
+                    // Hide login and show dashboard instead of redirecting
+                    if (loginSection) loginSection.classList.add('hidden');
+                    if (dashboardSection) dashboardSection.classList.remove('hidden');
+                    loadNewsForAdmin();
+                })
                 .catch((error) => { document.getElementById('error-message').textContent = "Email atau password salah."; });
         });
     }
@@ -658,15 +663,18 @@ if (dashboardSection) { // Check if on admin.html
                     }
                 }
                 if (cabinetStatus) cabinetStatus.textContent = "";
-        } else {
-            // If document doesn't exist, set empty values
-            const inputs = cabinetForm.querySelectorAll('input[type="text"], textarea');
-            inputs.forEach(input => {
-                input.value = '';
-            });
-            if (cabinetStatus) cabinetStatus.textContent = "Dokumen kabinet belum ada. Isi form dan simpan untuk membuat.";
+            } else {
+                // If document doesn't exist, set empty values
+                const inputs = cabinetForm.querySelectorAll('input[type="text"], textarea');
+                inputs.forEach(input => {
+                    input.value = '';
+                });
+                if (cabinetStatus) cabinetStatus.textContent = "Dokumen kabinet belum ada. Isi form dan simpan untuk membuat.";
+            }
+        } catch (error) { 
+            console.error("Error loading cabinet data:", error);
+            if (cabinetStatus) cabinetStatus.textContent = "Gagal memuat data kabinet.";
         }
-        } catch (error) { console.error("Error loading cabinet data:", error); }
     }
     if (cabinetForm) {
         cabinetForm.addEventListener('submit', async (e) => {
