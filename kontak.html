@@ -17,20 +17,49 @@
 
     <!-- Header -->
     <header class="bg-white shadow-sm sticky top-0 z-40">
-        <nav class="container mx-auto px-4 py-4 flex flex-col sm:flex-row justify-between items-center">
-            <a href="index.html" class="flex items-center space-x-2 text-2xl font-bold text-violet-600">
-                <img src="logo-bem.JPG" alt="Logo BEM FKIP UMM" class="h-14 w-14 rounded-full">
-                <span>BEM FKIP UMM</span>
-            </a>
-            <div class="flex-grow flex justify-center sm:justify-end mt-4 sm:mt-0 space-x-4">
-                <a href="index.html#tentang" class="text-gray-600 hover:text-violet-600 font-medium transition-colors" data-key="about">Tentang Kami</a>
-                <a href="index.html#berita" class="text-gray-600 hover:text-violet-600 font-medium transition-colors" data-key="news">Berita</a>
+        <nav class="container mx-auto px-4 py-4">
+            <div class="flex items-center justify-between">
+                <a href="/index" class="flex items-center space-x-2 text-2xl font-bold text-violet-600">
+                    <img src="logo-bem.JPG" alt="Logo BEM FKIP UMM" class="h-14 w-14 rounded-full">
+                    <span>BEM FKIP UMM</span>
+                </a>
+                <!-- Hamburger button (mobile only) -->
+                <button id="mobile-menu-button" class="md:hidden inline-flex items-center justify-center p-2 rounded-md border border-violet-600 text-violet-600 hover:bg-violet-50 focus:outline-none focus:ring-2 focus:ring-violet-500" aria-label="Toggle navigation" aria-expanded="false">
+                    <svg id="icon-hamburger" class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Desktop navigation -->
+            <div id="desktop-nav" class="hidden md:flex items-center justify-end mt-4 space-x-4">
                 <a href="/galeri" class="text-gray-600 hover:text-violet-600 font-medium transition-colors" data-key="gallery">Galeri</a>
                 <a href="/struktural" class="text-gray-600 hover:text-violet-600 font-medium transition-colors" data-key="structure">Struktural Kabinet</a>
-                <a href="/kontak" class="text-violet-600 font-bold" data-key="contact">Kontak</a>
+                <a href="/kontak" class="text-violet-600 font-bold transition-colors" data-key="contact">Kontak</a>
                 <div class="toggle-container">
                     <button id="theme-toggle" class="theme-toggle" title="Toggle Theme">🌙</button>
                     <button id="lang-toggle" class="lang-toggle" title="Switch Language">EN</button>
+                </div>
+                <a href="/admin" id="login-btn" class="bg-violet-500 text-white px-3 py-1 rounded-md text-sm font-medium">Login</a>
+                <a href="/admin" id="dashboard-btn" class="hidden bg-green-500 text-white px-3 py-1 rounded-md text-sm font-medium">Dashboard</a>
+                <a href="#" id="logout-btn" class="hidden bg-red-500 text-white px-3 py-1 rounded-md text-sm font-medium">Logout</a>
+            </div>
+
+            <!-- Mobile navigation -->
+            <div id="mobile-menu" class="md:hidden hidden mt-3 border-t border-gray-200 pt-3">
+                <div class="flex flex-col items-start space-y-3">
+                    <a href="/galeri" class="w-full text-left text-gray-700 hover:text-violet-600 font-medium transition-colors" data-key="gallery">Galeri</a>
+                    <a href="/struktural" class="w-full text-left text-gray-700 hover:text-violet-600 font-medium transition-colors" data-key="structure">Struktural Kabinet</a>
+                    <a href="/kontak" class="w-full text-left text-violet-600 font-bold transition-colors" data-key="contact">Kontak</a>
+                    <div class="flex items-center gap-3">
+                        <button id="mobile-theme-toggle" class="theme-toggle" title="Toggle Theme">🌙</button>
+                        <button id="mobile-lang-toggle" class="lang-toggle" title="Switch Language">EN</button>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <a href="/admin" id="mobile-login-btn" class="bg-violet-500 text-white px-3 py-1 rounded-md text-sm font-medium">Login</a>
+                        <a href="/admin" id="mobile-dashboard-btn" class="hidden bg-green-500 text-white px-3 py-1 rounded-md text-sm font-medium">Dashboard</a>
+                        <a href="#" id="mobile-logout-btn" class="hidden bg-red-500 text-white px-3 py-1 rounded-md text-sm font-medium">Logout</a>
+                    </div>
                 </div>
             </div>
         </nav>
