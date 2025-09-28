@@ -1,0 +1,61 @@
+/* Base styles from /galeri.html, /index.html, /struktural.html, /admin.html */
+body {
+    font-family: 'Inter', sans-serif;
+}
+
+/* Styles specific to /index.html */
+.dropdown:hover .dropdown-menu {
+    margin-top: -0.2rem;
+    display: block;
+}
+
+/* Styles specific to /news-detail.html */
+/* Base body style with the serif font for readability */
+body {
+    font-family: 'Merriweather', serif;
+    background-color: #f8f8f8; /* A slightly softer white */
+}
+
+/* Headline Style (Sans-serif, bold, and large) */
+#news-title {
+    font-family: 'Poppins', sans-serif;
+    font-size: 2.75rem; /* 44px */
+    font-weight: 700;
+    color: #1a1a1a; /* Very dark grey, not pure black */
+    line-height: 1.2;
+    margin-bottom: 0.5rem;
+}
+
+/* Metadata Style (Author & Date) */
+#news-meta {
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.875rem; /* 14px */
+    color: #5a5a5a;
+    padding-bottom: 1rem;
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+/* Main Article Content Style */
+#news-content {
+    color: #333;
+    font-size: 1.125rem; /* 18px */
+    line-height: 1.8; /* Generous line spacing for easy reading */
+}
+
+/* Ensure paragraphs inside the content have spacing */
+#news-content p {
+    margin-bottom: 1.5rem;
+}
+
+/* Styles specific to /struktural.html */
+.text-outline-violet { -webkit-text-stroke: 1px #7c3aed; }
+.main-leader-box { position: relative; z-index: 10; }
+.main-leader-box::after { content: ''; position: absolute; bottom: -3.5rem; left: 50%; transform: translateX(-50%); width: 2px; height: 3.5rem; background-color: #6b7280;}
+.division-grid { position: relative; }
+.division-grid::before { content: ''; position: absolute; top: -2.5rem; left: 9.4%; width: 81.2%; height: 2px; background-color: #6b7280; }
+.division-card-container { position: relative; z-index: 10; }
+.division-card-container::before { content: ''; position: absolute; top: -2.5rem; left: 50%; transform: translateX(-50%); width: 2px; height: 2.5rem; background-color: #6b7280; }
+
+/* Tailwind CSS is used via CDN: https://cdn.tailwindcss.com */
+/* The classes applied directly in HTML define the styling. */

@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Galeri - BEM FKIP UMM</title>
+    <link rel="icon" href="logo-bem-trs.png" type="image/x-icon">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css"> <!-- Link to external CSS -->
+</head>
+<body class="bg-gray-100 text-gray-800">
+
+    <header class="bg-white shadow-sm sticky top-0 z-40">
+        <nav class="container mx-auto px-4 py-4 flex flex-col sm:flex-row justify-between items-center">
+            <a href="/index" class="flex items-center space-x-2 text-2xl font-bold text-violet-600">
+                <img src="logo-bem.JPG" alt="Logo BEM FKIP UMM" class="h-14 w-14 rounded-full">
+                <span>BEM FKIP UMM</span>
+            </a>
+            <div class="flex items-center flex-grow justify-center sm:justify-end mt-4 sm:mt-0 space-x-4">
+                <a href="/index#tentang" class="text-gray-600 hover:text-violet-600 font-medium">Tentang Kami</a>
+                <a href="/index#berita" class="text-gray-600 hover:text-violet-600 font-medium">Berita</a>
+                <a href="/galeri" class="text-violet-600 font-bold">Galeri</a>
+                <a href="/struktural" class="text-gray-600 hover:text-violet-600 font-medium">Struktural Kabinet</a>
+                <a href="/kontak" class="text-gray-600 hover:text-violet-600 font-medium">Kontak</a>
+                <a href="/admin" id="login-btn" class="bg-violet-500 text-white px-3 py-1 rounded-md text-sm font-medium">Login</a>
+                <a href="/admin" id="dashboard-btn" class="hidden bg-green-500 text-white px-3 py-1 rounded-md text-sm font-medium">Dashboard</a>
+                <a href="#" id="logout-btn" class="hidden bg-red-500 text-white px-3 py-1 rounded-md text-sm font-medium">Logout</a>
+            </div>
+        </nav>
+    </header>
+
+    <main class="py-16 px-4">
+        <div class="container mx-auto text-center">
+            <h1 class="text-4xl font-bold mb-4">Galeri Kegiatan</h1>
+            <p class="text-gray-600 max-w-2xl mx-auto mb-10">
+                Momen-momen yang berhasil kami abadikan dari berbagai kegiatan BEM FKIP UMM.
+            </p>
+            <div id="gallery-container" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                <p class="col-span-full text-gray-500">Memuat galeri...</p>
+            </div>
+        </div>
+    </main>
+
+    <footer class="bg-gray-800 text-gray-400 py-6 px-4 text-center mt-auto">
+        <p>&copy; 2025 BEM FKIP UMM Divisi Media & Komunikasi. Hak Cipta Dilindungi.</p>
+    </footer>
+
+    <script type="module" src="script.js"></script> <!-- Link to external JS -->
+
+</body>
+</html>

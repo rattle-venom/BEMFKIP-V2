@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Struktur Kabinet BEM FKIP UMM</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="icon" href="logo-bem-trs.png" type="image/x-icon">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css"> <!-- Link to external CSS -->
+</head>
+<body class="bg-gray-100 text-gray-800">
+
+    <div class="flex flex-col min-h-screen">
+        <header class="bg-white shadow-sm sticky top-0 z-40">
+            <nav class="container mx-auto px-4 py-4 flex flex-col sm:flex-row justify-between items-center">
+                <a href="/index" class="flex items-center space-x-2 text-2xl font-bold text-violet-600">
+                    <img src="logo-bem.JPG" alt="Logo BEM FKIP UMM" class="h-14 w-14 rounded-full">
+                    <span>BEM FKIP UMM</span>
+                </a>
+                <div class="flex items-center flex-grow justify-center sm:justify-end mt-4 sm:mt-0 space-x-4">
+                    <a href="/index#tentang" class="text-gray-600 hover:text-violet-600 font-medium">Tentang Kami</a>
+                    <a href="/index#berita" class="text-gray-600 hover:text-violet-600 font-medium">Berita</a>
+                    <a href="/galeri" class="text-gray-600 hover:text-violet-600 font-medium">Galeri</a>
+                    <a href="/struktural" class="text-violet-600 font-bold">Struktural Kabinet</a>
+                    <a href="/kontak" class="text-gray-600 hover:text-violet-600 font-medium">Kontak</a>
+                    <a href="/admin" id="login-btn" class="bg-violet-500 text-white px-3 py-1 rounded-md text-sm font-medium">Login</a>
+                    <a href="/admin" id="dashboard-btn" class="hidden bg-green-500 text-white px-3 py-1 rounded-md text-sm font-medium">Dashboard</a>
+                    <a href="#" id="logout-btn" class="hidden bg-red-500 text-white px-3 py-1 rounded-md text-sm font-medium">Logout</a>
+                    </div>
+            </nav>
+        </header>
+
+        <section class="bg-violet-600 text-white py-16 px-4 text-center">
+            <div class="container mx-auto">
+                <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold mb-4">Struktur Kabinet</h1>
+                <p class="text-lg sm:text-xl font-light max-w-2xl mx-auto">Mengenal para pemimpin dan anggota yang menggerakkan BEM FKIP UMM.</p>
+            </div>
+        </section>
+
+        <section id="struktur-konten" class="py-16 px-4 bg-gray-50">
+            <div class="container mx-auto">
+                <h2 class="text-3xl font-bold text-center mb-10">Struktur Kabinet BEM FKIP UMM 2025/2026</h2>
+
+                <div class="main-leader-box relative bg-violet-600 text-white rounded-xl shadow-lg p-6 text-center mb-16 mx-auto max-w-lg">
+                    <h3 class="text-2xl font-bold mb-2">Gubernur Mahasiswa</h3>
+                    <p id="gubernur" class="text-lg font-medium">Memuat...</p>
+                    <div class="mt-4"><h3 class="text-xl font-semibold mb-1">Wakil Gubernur Mahasiswa</h3><p id="wakilGubernur" class="font-medium">Memuat...</p></div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
+                        <div><h4 class="text-lg font-semibold">Sekretaris Umum</h4><p id="sekretarisUmum">Memuat...</p></div>
+                        <div><h4 class="text-lg font-semibold">Bendahara Umum</h4><p id="bendaharaUmum">Memuat...</p></div>
+                    </div>
+                </div>
+
+                <div class="division-grid relative grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6">
+                    <div class="division-card-container relative flex flex-col items-center">
+                        <div class="bg-white rounded-xl shadow-lg p-6 text-center w-full h-full">
+                            <h3 class="text-2xl font-bold mb-4 text-violet-600 text-outline-violet">MEDIA & KOMUNIKASI</h3>
+                            <div class="mb-4"><p class="font-semibold">Ketua Bidang</p><p id="medkom_ketua">Memuat...</p></div>
+                            <div class="mb-4"><p class="font-semibold">Sekretaris Bidang</p><p id="medkom_sekretaris">Memuat...</p></div>
+                            <div class="mt-4"><p class="font-semibold mb-1 text-outline-violet">Anggota</p><div id="medkom_anggota" class="flex flex-col items-center justify-center"></div></div>
+                        </div>
+                    </div>
+                    <div class="division-card-container relative flex flex-col items-center">
+                        <div class="bg-white rounded-xl shadow-lg p-6 text-center w-full h-full">
+                            <h3 class="text-2xl font-bold mb-4 text-violet-600 text-outline-violet">KEILMUAN DAN KASTRAT</h3>
+                            <div class="mb-4"><p class="font-semibold">Ketua Bidang</p><p id="kastrat_ketua">Memuat...</p></div>
+                            <div class="mb-4"><p class="font-semibold">Sekretaris Bidang</p><p id="kastrat_sekretaris">Memuat...</p></div>
+                            <div class="mt-4"><p class="font-semibold mb-1 text-outline-violet">Anggota</p><div id="kastrat_anggota" class="flex flex-col items-center justify-center"></div></div>
+                        </div>
+                    </div>
+                    <div class="division-card-container relative flex flex-col items-center">
+                        <div class="bg-white rounded-xl shadow-lg p-6 text-center w-full h-full">
+                            <h3 class="text-2xl font-bold mb-4 text-violet-600 text-outline-violet">BAKAT DAN MINAT</h3>
+                            <div class="mb-4"><p class="font-semibold">Ketua Bidang</p><p id="bakatminat_ketua">Memuat...</p></div>
+                            <div class="mb-4"><p class="font-semibold">Sekretaris Bidang</p><p id="bakatminat_sekretaris">Memuat...</p></div>
+                            <div class="mt-4"><p class="font-semibold mb-1 text-outline-violet">Anggota</p><div id="bakatminat_anggota" class="flex flex-col items-center justify-center"></div></div>
+                        </div>
+                    </div>
+                    <div class="division-card-container relative flex flex-col items-center">
+                        <div class="bg-white rounded-xl shadow-lg p-6 text-center w-full h-full">
+                            <h3 class="text-2xl font-bold mb-4 text-violet-600 text-outline-violet">KEAGAMAAN</h3>
+                            <div class="mb-4"><p class="font-semibold">Ketua Bidang</p><p id="agama_ketua">Memuat...</p></div>
+                            <div class="mb-4"><p class="font-semibold">Sekretaris Bidang</p><p id="agama_sekretaris">Memuat...</p></div>
+                            <div class="mt-4"><p class="font-semibold mb-1 text-outline-violet">Anggota</p><div id="agama_anggota" class="flex flex-col items-center justify-center"></div></div>
+                        </div>
+                    </div>
+                    <div class="division-card-container relative flex flex-col items-center">
+                        <div class="bg-white rounded-xl shadow-lg p-6 text-center w-full h-full">
+                            <h3 class="text-2xl font-bold mb-4 text-violet-600 text-outline-violet">KEHUMANITASAN</h3>
+                            <div class="mb-4"><p class="font-semibold">Ketua Bidang</p><p id="humanis_ketua">Memuat...</p></div>
+                            <div class="mb-4"><p class="font-semibold">Sekretaris Bidang</p><p id="humanis_sekretaris">Memuat...</p></div>
+                            <div class="mt-4"><p class="font-semibold mb-1 text-outline-violet">Anggota</p><div id="humanis_anggota" class="flex flex-col items-center justify-center"></div></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <footer class="bg-gray-800 text-gray-400 py-6 px-4 text-center mt-auto">
+            <p>&copy; 2025 BEM FKIP UMM Divisi Media & Komunikasi. Hak Cipta Dilindungi.</p>
+        </footer>
+    </div>
+
+    <script type="module" src="script.js"></script> <!-- Link to external JS -->
+</body>
+</html>
