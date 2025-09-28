@@ -182,27 +182,45 @@ function initFeatures() {
     if (langToggle) langToggle.addEventListener('click', toggleLanguage);
 }
 
-// --- Common Elements (used across multiple pages) ---
+ // --- Common Elements (used across multiple pages) ---
 const logoutBtn = document.getElementById('logout-btn');
 const loginBtn = document.getElementById('login-btn');
 const dashboardBtn = document.getElementById('dashboard-btn');
 
-// --- Authentication State Checker (Common) ---
-if (auth && loginBtn && logoutBtn && dashboardBtn) { // Check if elements exist on the page
+// Mobile nav elements (index.html)
+const mobileMenuButton = document.getElementById('mobile-menu-button');
+const mobileMenu = document.getElementById('mobile-menu');
+const mobileLoginBtn = document.getElementById('mobile-login-btn');
+const mobileLogoutBtn = document.getElementById('mobile-logout-btn');
+const mobileDashboardBtn = document.getElementById('mobile-dashboard-btn');
+const mobileThemeToggle = document.getElementById('mobile-theme-toggle');
+const mobileLangToggle = document.getElementById('mobile-lang-toggle');
+
+ // --- Authentication State Checker (Common) ---
+if (auth) {
     onAuthStateChanged(auth, (user) => {
+        const addNewsBtnContainer = document.getElementById('add-news-btn-container');
         if (user) {
-            loginBtn.classList.add('hidden');
-            logoutBtn.classList.remove('hidden');
-            dashboardBtn.classList.remove('hidden');
-            // Specific for index.html
-            const addNewsBtnContainer = document.getElementById('add-news-btn-container');
+            if (loginBtn) loginBtn.classList.add('hidden');
+            if (logoutBtn) logoutBtn.classList.remove('hidden');
+            if (dashboardBtn) dashboardBtn.classList.remove('hidden');
+
+            // Mobile equivalents
+            if (mobileLoginBtn) mobileLoginBtn.classList.add('hidden');
+            if (mobileLogoutBtn) mobileLogoutBtn.classList.remove('hidden');
+            if (mobileDashboardBtn) mobileDashboardBtn.classList.remove('hidden');
+
             if (addNewsBtnContainer) addNewsBtnContainer.classList.remove('hidden');
         } else {
-            loginBtn.classList.remove('hidden');
-            logoutBtn.classList.add('hidden');
-            dashboardBtn.classList.add('hidden');
-            // Specific for index.html
-            const addNewsBtnContainer = document.getElementById('add-news-btn-container');
+            if (loginBtn) loginBtn.classList.remove('hidden');
+            if (logoutBtn) logoutBtn.classList.add('hidden');
+            if (dashboardBtn) dashboardBtn.classList.add('hidden');
+
+            // Mobile equivalents
+            if (mobileLoginBtn) mobileLoginBtn.classList.remove('hidden');
+            if (mobileLogoutBtn) mobileLogoutBtn.classList.add('hidden');
+            if (mobileDashboardBtn) mobileDashboardBtn.classList.add('hidden');
+
             if (addNewsBtnContainer) addNewsBtnContainer.classList.add('hidden');
         }
     });
@@ -247,6 +265,44 @@ if (loginFormOverlay) {
                 loginErrorMessage.classList.remove('hidden');
             }
         }
+    });
+}
+
+ // --- Mobile Navigation (index.html) ---
+if (mobileMenuButton && mobileMenu) {
+    mobileMenuButton.addEventListener('click', () => {
+        const expanded = mobileMenuButton.getAttribute('aria-expanded') === 'true';
+        mobileMenuButton.setAttribute('aria-expanded', String(!expanded));
+        mobileMenu.classList.toggle('hidden');
+    });
+    const links = mobileMenu.querySelectorAll('a');
+    links.forEach(a => a.addEventListener('click', () => {
+        mobileMenu.classList.add('hidden');
+        mobileMenuButton.setAttribute('aria-expanded', 'false');
+    }));
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            mobileMenu.classList.add('hidden');
+            mobileMenuButton.setAttribute('aria-expanded', 'false');
+        }
+    });
+}
+if (mobileThemeToggle) mobileThemeToggle.addEventListener('click', toggleTheme);
+if (mobileLangToggle) mobileLangToggle.addEventListener('click', toggleLanguage);
+if (mobileLoginBtn) {
+    mobileLoginBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        if (loginModal) loginModal.classList.remove('hidden');
+        if (mobileMenu) mobileMenu.classList.add('hidden');
+        if (mobileMenuButton) mobileMenuButton.setAttribute('aria-expanded', 'false');
+    });
+}
+if (mobileLogoutBtn) {
+    mobileLogoutBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        signOut(auth).catch((error) => console.error("Sign Out Error", error));
+        if (mobileMenu) mobileMenu.classList.add('hidden');
+        if (mobileMenuButton) mobileMenuButton.setAttribute('aria-expanded', 'false');
     });
 }
 
