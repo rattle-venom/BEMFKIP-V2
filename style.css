@@ -1,24 +1,26 @@
 /* Base styles from /galeri.html, /index.html, /struktural.html, /admin.html */
 :root {
-    --bg-primary: #ffffff;
-    --bg-secondary: #f8f9fa;
-    --text-primary: #1a1a1a;
-    --text-secondary: #6b7280;
-    --accent: #7c3aed;
-    --card-bg: #ffffff;
-    --border: #e5e7eb;
-    --shadow: rgba(0, 0, 0, 0.1);
+    /* Light mode palette — softer, balanced */
+    --bg-primary: #F8F9FC;        /* soft neutral gray background */
+    --bg-secondary: #EEF1F6;      /* subtle section bg */
+    --text-primary: #1E1E1E;      /* dark gray text */
+    --text-secondary: #6b7280;    /* muted gray */
+    --accent: #6A40E4;            /* muted hero purple */
+    --card-bg: #FFFFFF;           /* card surface */
+    --border: rgba(17,17,17,0.06);/* subtle hairline divider */
+    --shadow: rgba(0, 0, 0, 0.05);/* soft shadow for cards */
 }
 
 [data-theme="dark"] {
-    --bg-primary: #1a1a1a;
-    --bg-secondary: #2d3748;
-    --text-primary: #f7fafc;
-    --text-secondary: #a0aec0;
-    --accent: #9f7aea;
-    --card-bg: #2d3748;
-    --border: #4a5568;
-    --shadow: rgba(0, 0, 0, 0.3);
+    /* Dark mode palette — soft charcoal with muted accents */
+    --bg-primary: #1E1E2E;        /* charcoal background */
+    --bg-secondary: #2C2C3A;      /* slightly lighter section */
+    --text-primary: #EDEDED;      /* off-white text */
+    --text-secondary: #B8B8C6;    /* muted secondary text */
+    --accent: #7C4DFF;            /* muted purple for hero/buttons */
+    --card-bg: #2E2E3F;           /* elevated card surface */
+    --border: rgba(255,255,255,0.08); /* subtle divider */
+    --shadow: rgba(0, 0, 0, 0.35); /* soft shadow visible on dark bg */
 }
 
 body {
@@ -76,15 +78,19 @@ header a:hover {
     background-color: var(--bg-secondary);
 }
 
-/* Hero section */
-.bg-violet-600 {
-    background-color: var(--accent) !important;
-}
+/* Global soft dividers and shadows */
+section + section { border-top: 1px solid var(--border); }
+.shadow, .shadow-md, .shadow-lg, .shadow-xl { box-shadow: 0 8px 24px var(--shadow) !important; }
 
-/* About section cards */
+/* Hero section */
+.bg-violet-600 { background-color: var(--accent) !important; }
+
+/* About/Generic cards */
 .bg-white {
     background-color: var(--card-bg) !important;
     color: var(--text-primary) !important;
+    border: 1px solid var(--border);
+    box-shadow: 0 6px 16px var(--shadow);
 }
 
 /* News section */
