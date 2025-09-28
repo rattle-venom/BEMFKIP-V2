@@ -14,6 +14,153 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
+// --- Translation System ---
+const translations = {
+    id: {
+        home: "Beranda",
+        about: "Tentang Kami",
+        news: "Berita",
+        gallery: "Galeri",
+        structure: "Struktural Kabinet",
+        contact: "Kontak",
+        "welcome-title": "Selamat Datang di BEM FKIP UMM",
+        "welcome-subtitle": "Kabinet Waskita Mandala Periode 2025/2026",
+        "learn-more": "Pelajari Lebih Lanjut",
+        "about-title": "Tentang Kami",
+        "about-description": "Badan Eksekutif Mahasiswa Fakultas Keguruan dan Ilmu Pendidikan UMM adalah organisasi eksekutif mahasiswa di tingkat fakultas yang berperan sebagai wadah aspirasi, pengembangan potensi, serta penggerak kegiatan kemahasiswaan di lingkungan FKIP.",
+        "division-general-title": "Bidang Umum",
+        "division-general-desc": "Kami merupakan inti dari struktur kepemimpinan dan administrasi BEM yang dikoordinasi langsung oleh Gubernur Mahasiswa, Wakil Gubernur, Sekretaris Umum, dan Bendahara Umum. Kami memastikan seluruh roda organisasi berjalan secara efektif dan efisien dengan mengelola surat-menyurat, arsip, inventaris, serta alur keuangan. Peran kami adalah sebagai penopang utama yang mendukung kelancaran program kerja seluruh bidang lainnya.",
+        "division-media-title": "Media & Komunikasi",
+        "division-media-desc": "Kami adalah garda terdepan dalam menyebarkan informasi dan menjadi wajah BEM di ranah publik. Tugas kami tidak hanya mengelola seluruh kanal media sosial, tetapi juga merancang strategi komunikasi dan menciptakan konten kreatif seperti poster, video, dan infografis. Kami bekerja untuk membangun citra positif BEM serta memastikan setiap suara dan aspirasi mahasiswa dapat tersampaikan dengan baik.",
+        "division-academic-title": "Keilmuan dan Kastrat",
+        "division-academic-desc": "Kami hadir sebagai pusat pengembangan intelektual dan daya kritis mahasiswa. Melalui program keilmuan, kami menyelenggarakan seminar, lokakarya, dan diskusi untuk memperluas wawasan akademik. Sementara itu, melalui Kajian Strategis (Kastrat), kami secara aktif menganalisis isu-isu penting di tingkat universitas maupun nasional, kemudian merumuskan sikap dan rekomendasi kebijakan sebagai dasar gerakan advokasi BEM.",
+        "division-talent-title": "Bakat dan Minat",
+        "division-talent-desc": "Kami menjadi wadah bagi seluruh mahasiswa untuk menyalurkan dan mengembangkan potensi di luar bidang akademik. Kami memfasilitasi berbagai kegiatan di bidang olahraga, seni, dan hobi lainnya, mulai dari latihan rutin hingga penyelenggaraan kompetisi dan pertunjukan. Tujuan kami adalah untuk menumbuhkan semangat sportivitas, kreativitas, dan mempererat kebersamaan antar mahasiswa melalui minat yang mereka miliki.",
+        "division-religious-title": "Keagamaan",
+        "division-religious-desc": "Kami berfokus pada pembinaan dan peningkatan kualitas spiritual serta moral mahasiswa. Kami secara rutin menyelenggarakan berbagai kegiatan keagamaan, seperti perayaan hari besar, kajian kitab suci, dan acara-acara rohani lainnya. Melalui program kami, kami berupaya menciptakan lingkungan kampus yang harmonis, toleran, dan religius bagi seluruh civitas akademika.",
+        "division-humanity-title": "Kehumanusiaan",
+        "division-humanity-desc": "Kami bergerak di garda terdepan dalam aksi kepedulian sosial dan pengabdian kepada masyarakat. Kami menginisiasi dan mengorganisir berbagai program kemanusiaan, mulai dari bakti sosial di desa binaan, penggalangan dana untuk korban bencana, hingga kampanye isu sosial. Tujuan utama kami adalah menumbuhkan kepekaan dan jiwa sosial mahasiswa agar dapat memberikan kontribusi nyata bagi masyarakat luas.",
+        "news-title": "Berita & Artikel Terbaru",
+        "add-news": "Tambah Berita Baru"
+    },
+    en: {
+        home: "Home",
+        about: "About Us",
+        news: "News",
+        gallery: "Gallery",
+        structure: "Cabinet Structure",
+        contact: "Contact",
+        "welcome-title": "Welcome to BEM FKIP UMM",
+        "welcome-subtitle": "Waskita Mandala Cabinet Period 2025/2026",
+        "learn-more": "Learn More",
+        "about-title": "About Us",
+        "about-description": "The Student Executive Board of the Faculty of Teacher Training and Education UMM is a faculty-level student executive organization that serves as a forum for aspirations, potential development, and a driver of student activities in the FKIP environment.",
+        "division-general-title": "General Division",
+        "division-general-desc": "We are the core of BEM's leadership and administrative structure, coordinated directly by the Student Governor, Vice Governor, General Secretary, and General Treasurer. We ensure that all organizational wheels run effectively and efficiently by managing correspondence, archives, inventory, and financial flows. Our role is as the main support that supports the smooth running of work programs for all other divisions.",
+        "division-media-title": "Media & Communication",
+        "division-media-desc": "We are at the forefront of disseminating information and becoming BEM's face in the public sphere. Our duties are not only to manage all social media channels, but also to design communication strategies and create creative content such as posters, videos, and infographics. We work to build a positive image of BEM and ensure that every voice and student aspiration can be conveyed well.",
+        "division-academic-title": "Academic & Strategic Studies",
+        "division-academic-desc": "We are present as a center for the intellectual development and critical thinking of students. Through academic programs, we organize seminars, workshops, and discussions to broaden academic insights. Meanwhile, through Strategic Studies (Kastrat), we actively analyze important issues at university and national levels, then formulate attitudes and policy recommendations as the basis for BEM's advocacy movement.",
+        "division-talent-title": "Talent & Interests",
+        "division-talent-desc": "We provide a forum for all students to channel and develop potential outside the academic field. We facilitate various activities in sports, arts, and other hobbies, from regular training to organizing competitions and performances. Our goal is to foster a spirit of sportsmanship, creativity, and strengthen togetherness among students through their interests.",
+        "division-religious-title": "Religious Affairs",
+        "division-religious-desc": "We focus on fostering and improving the spiritual and moral quality of students. We regularly organize various religious activities, such as celebrating major holidays, studying holy books, and other spiritual events. Through our programs, we strive to create a harmonious, tolerant, and religious campus environment for all academic community members.",
+        "division-humanity-title": "Humanitarian Affairs",
+        "division-humanity-desc": "We are at the forefront of social care actions and community service. We initiate and organize various humanitarian programs, ranging from social service in fostered villages, fundraising for disaster victims, to social issue campaigns. Our main goal is to foster sensitivity and social spirit in students so that they can make real contributions to the wider community.",
+        "news-title": "Latest News & Articles",
+        "add-news": "Add New News"
+    }
+};
+
+let currentLang = localStorage.getItem('language') || 'id';
+
+function setLanguage(lang) {
+    currentLang = lang;
+    localStorage.setItem('language', lang);
+    document.documentElement.lang = lang;
+    updateTexts();
+}
+
+function updateTexts() {
+    const elements = document.querySelectorAll('[data-key]');
+    elements.forEach(element => {
+        const key = element.getAttribute('data-key');
+        if (translations[currentLang][key]) {
+            element.textContent = translations[currentLang][key];
+        }
+    });
+    // Update lang toggle button
+    const langToggle = document.getElementById('lang-toggle');
+    if (langToggle) {
+        langToggle.textContent = currentLang === 'id' ? 'EN' : 'ID';
+    }
+}
+
+// --- Tab Switching Logic ---
+function initTabs() {
+    const tabButtons = document.querySelectorAll('.tab-btn');
+    const tabContents = document.querySelectorAll('.tab-content');
+
+    tabButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const tabId = button.getAttribute('data-tab');
+
+            // Remove active class from all buttons and contents
+            tabButtons.forEach(btn => btn.classList.remove('active'));
+            tabContents.forEach(content => content.classList.remove('active'));
+
+            // Add active class to clicked button and corresponding content
+            button.classList.add('active');
+            document.getElementById(tabId).classList.add('active');
+        });
+    });
+}
+
+// --- Theme Toggle Logic ---
+let currentTheme = localStorage.getItem('theme') || 'light';
+
+function setTheme(theme) {
+    currentTheme = theme;
+    localStorage.setItem('theme', theme);
+    document.documentElement.setAttribute('data-theme', theme);
+    updateThemeIcon();
+}
+
+function updateThemeIcon() {
+    const themeToggle = document.getElementById('theme-toggle');
+    if (themeToggle) {
+        themeToggle.textContent = currentTheme === 'light' ? '🌙' : '☀️';
+    }
+}
+
+function toggleTheme() {
+    setTheme(currentTheme === 'light' ? 'dark' : 'light');
+}
+
+// --- Language Toggle Logic ---
+function toggleLanguage() {
+    setLanguage(currentLang === 'id' ? 'en' : 'id');
+}
+
+// --- Initialize Features ---
+function initFeatures() {
+    // Set initial theme
+    setTheme(currentTheme);
+
+    // Set initial language
+    setLanguage(currentLang);
+
+    // Initialize tabs
+    initTabs();
+
+    // Add event listeners
+    const themeToggle = document.getElementById('theme-toggle');
+    const langToggle = document.getElementById('lang-toggle');
+
+    if (themeToggle) themeToggle.addEventListener('click', toggleTheme);
+    if (langToggle) langToggle.addEventListener('click', toggleLanguage);
+}
+
 // --- Common Elements (used across multiple pages) ---
 const logoutBtn = document.getElementById('logout-btn');
 const loginBtn = document.getElementById('login-btn');
@@ -122,6 +269,51 @@ if (newsContainer) { // Check if on index.html
         });
     }
 
+    // --- Login Modal Handling ---
+    const loginModal = document.getElementById('login-modal');
+    const loginFormOverlay = document.getElementById('login-form-overlay');
+    const closeLoginBtn = document.getElementById('close-login-btn');
+    const loginErrorMessage = document.getElementById('login-error-message');
+
+    if (loginBtn) {
+        loginBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            if (loginModal) loginModal.classList.remove('hidden');
+        });
+    }
+    if (closeLoginBtn) closeLoginBtn.addEventListener('click', () => { if (loginModal) loginModal.classList.add('hidden'); });
+    if (loginFormOverlay) {
+        loginFormOverlay.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email-input-overlay').value;
+            const password = document.getElementById('password-input-overlay').value;
+            try {
+                await signInWithEmailAndPassword(auth, email, password);
+                if (loginModal) loginModal.classList.add('hidden');
+                loginFormOverlay.reset();
+                if (loginErrorMessage) loginErrorMessage.classList.add('hidden');
+                window.location.href = '/admin';
+            } catch (error) {
+                if (loginErrorMessage) {
+                    loginErrorMessage.textContent = "Email atau password salah.";
+                    loginErrorMessage.classList.remove('hidden');
+                }
+            }
+        });
+    }
+
+    // --- Auth Gate Helper ---
+    function checkAuthAndGate() {
+        onAuthStateChanged(auth, (user) => {
+            if (!user) {
+                // If not logged in, show login modal for admin features
+                if (window.location.pathname.includes('admin')) {
+                    if (loginModal) loginModal.classList.remove('hidden');
+                }
+            }
+        });
+    }
+
     // --- Display News from Firestore ---
     const newsQuery = query(collection(db, "news"), orderBy("date", "desc"));
     onSnapshot(newsQuery, (snapshot) => {
@@ -152,6 +344,12 @@ if (newsContainer) { // Check if on index.html
         });
         newsContainer.innerHTML = newsHtml;
     });
+
+    // Call checkAuthAndGate at the end
+    checkAuthAndGate();
+
+    // Initialize new features
+    initFeatures();
 }
 
 // --- /news-detail.html specific logic ---

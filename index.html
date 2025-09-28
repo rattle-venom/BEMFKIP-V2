@@ -63,6 +63,35 @@
         </div>
     </div>
 
+    <div id="login-modal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div class="mt-3 text-center">
+                <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">Login Admin</h3>
+                <form id="login-form-overlay">
+                    <div class="space-y-4">
+                        <div>
+                            <label for="email-input-overlay" class="block text-sm font-medium text-gray-700">Email</label>
+                            <input type="email" id="email-input-overlay" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-violet-500 focus:border-violet-500">
+                        </div>
+                        <div>
+                            <label for="password-input-overlay" class="block text-sm font-medium text-gray-700">Password</label>
+                            <input type="password" id="password-input-overlay" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-violet-500 focus:border-violet-500">
+                        </div>
+                    </div>
+                    <div class="items-center px-4 py-3 mt-4 text-right bg-gray-50 -mx-5 -mb-5 rounded-b-md">
+                        <button id="close-login-btn" type="button" class="px-4 py-2 bg-gray-200 text-gray-800 text-base font-medium rounded-md shadow-sm hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 mr-2">
+                            Batal
+                        </button>
+                        <button type="submit" class="px-4 py-2 bg-violet-600 text-white text-base font-medium rounded-md shadow-sm hover:bg-violet-700 focus:outline-none focus:ring-2 focus:ring-violet-500">
+                            Login
+                        </button>
+                    </div>
+                </form>
+                <p id="login-error-message" class="text-red-500 text-sm mt-2 hidden"></p>
+            </div>
+        </div>
+    </div>
+
     <div class="flex flex-col min-h-screen">
         <header class="bg-white shadow-sm sticky top-0 z-40">
             <nav class="container mx-auto px-4 py-4 flex flex-col sm:flex-row justify-between items-center">
@@ -71,86 +100,103 @@
                     <span>BEM FKIP UMM</span>
                 </a>
                 <div class="flex items-center flex-grow justify-center sm:justify-end mt-4 sm:mt-0 space-x-4">
-                    <a href="/index#tentang" class="text-gray-600 hover:text-violet-600 font-medium">Tentang Kami</a>
-                    <a href="/index#berita" class="text-gray-600 hover:text-violet-600 font-medium">Berita</a>
-                    <a href="/galeri" class="text-gray-600 hover:text-violet-600 font-medium">Galeri</a>
-                    <a href="/struktural" class="text-gray-600 hover:text-violet-600 font-medium">Struktural Kabinet</a>
-                    <a href="/kontak" class="text-gray-600 hover:text-violet-600 font-medium">Kontak</a>
+                    <a href="/galeri" class="text-gray-600 hover:text-violet-600 font-medium" data-key="gallery">Galeri</a>
+                    <a href="/struktural" class="text-gray-600 hover:text-violet-600 font-medium" data-key="structure">Struktural Kabinet</a>
+                    <a href="/kontak" class="text-gray-600 hover:text-violet-600 font-medium" data-key="contact">Kontak</a>
+                    <div class="toggle-container">
+                        <button id="theme-toggle" class="theme-toggle" title="Toggle Theme">🌙</button>
+                        <button id="lang-toggle" class="lang-toggle" title="Switch Language">EN</button>
+                    </div>
                     <a href="/admin" id="login-btn" class="bg-violet-500 text-white px-3 py-1 rounded-md text-sm font-medium">Login</a>
                     <a href="/admin" id="dashboard-btn" class="hidden bg-green-500 text-white px-3 py-1 rounded-md text-sm font-medium">Dashboard</a>
                     <a href="#" id="logout-btn" class="hidden bg-red-500 text-white px-3 py-1 rounded-md text-sm font-medium">Logout</a>
                 </div>
-            </nav>
-        </header>
+        </nav>
+    </header>
 
+    <div class="tab-container">
+        <div class="container mx-auto">
+            <div class="tab-buttons">
+                <button class="tab-btn active" data-tab="beranda" data-key="home">Beranda</button>
+                <button class="tab-btn" data-tab="tentang" data-key="about">Tentang Kami</button>
+                <button class="tab-btn" data-tab="berita" data-key="news">Berita</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="beranda" class="tab-content active">
         <section class="bg-violet-600 text-white py-16 px-4 text-center rounded-b-3xl shadow-xl">
             <div class="container mx-auto">
-                <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold mb-4">
+                <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold mb-4" data-key="welcome-title">
                     Selamat Datang di BEM FKIP UMM
                 </h1>
-                <p class="text-lg sm:text-xl font-light max-w-2xl mx-auto">
+                <p class="text-lg sm:text-xl font-light max-w-2xl mx-auto" data-key="welcome-subtitle">
                     Kabinet Waskita Mandala Periode 2025/2026
                 </p>
                 <div class="mt-8 flex justify-center">
-                    <a href="#tentang" class="px-6 py-3 bg-white text-violet-600 font-bold rounded-full shadow-lg hover:bg-gray-100 transition-colors">
+                    <a href="#tentang" class="px-6 py-3 bg-white text-violet-600 font-bold rounded-full shadow-lg hover:bg-gray-100 transition-colors" data-key="learn-more">
                         Pelajari Lebih Lanjut
                     </a>
                 </div>
             </div>
         </section>
+    </div>
 
-        <section id="tentang" class="py-16 px-4">
+    <div id="tentang" class="tab-content">
+        <section class="py-16 px-4">
             <div class="container mx-auto text-center">
-                <h2 class="text-3xl font-bold mb-4">Tentang Kami</h2>
-                <p class="text-gray-600 max-w-3xl mx-auto mb-8">
+                <h2 class="text-3xl font-bold mb-4" data-key="about-title">Tentang Kami</h2>
+                <p class="text-gray-600 max-w-3xl mx-auto mb-8" data-key="about-description">
                     Badan Eksekutif Mahasiswa Fakultas Keguruan dan Ilmu Pendidikan UMM adalah organisasi eksekutif mahasiswa di tingkat fakultas yang berperan sebagai wadah aspirasi, pengembangan potensi, serta penggerak kegiatan kemahasiswaan di lingkungan FKIP.
                 </p>
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                     <div class="p-6 bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow">
-                        <h3 class="font-bold text-xl mb-2">Bidang Umum</h3>
-                        <p class="text-gray-500">
+                        <h3 class="font-bold text-xl mb-2" data-key="division-general-title">Bidang Umum</h3>
+                        <p class="text-gray-500" data-key="division-general-desc">
                             Kami merupakan inti dari struktur kepemimpinan dan administrasi BEM yang dikoordinasi langsung oleh Gubernur Mahasiswa, Wakil Gubernur, Sekretaris Umum, dan Bendahara Umum. Kami memastikan seluruh roda organisasi berjalan secara efektif dan efisien dengan mengelola surat-menyurat, arsip, inventaris, serta alur keuangan. Peran kami adalah sebagai penopang utama yang mendukung kelancaran program kerja seluruh bidang lainnya.
                         </p>
                     </div>
                     <div class="p-6 bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow">
-                        <h3 class="font-bold text-xl mb-2">Media & Komunikasi</h3>
-                        <p class="text-gray-500">
+                        <h3 class="font-bold text-xl mb-2" data-key="division-media-title">Media & Komunikasi</h3>
+                        <p class="text-gray-500" data-key="division-media-desc">
                             Kami adalah garda terdepan dalam menyebarkan informasi dan menjadi wajah BEM di ranah publik. Tugas kami tidak hanya mengelola seluruh kanal media sosial, tetapi juga merancang strategi komunikasi dan menciptakan konten kreatif seperti poster, video, dan infografis. Kami bekerja untuk membangun citra positif BEM serta memastikan setiap suara dan aspirasi mahasiswa dapat tersampaikan dengan baik.
                         </p>
                     </div>
                     <div class="p-6 bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow">
-                        <h3 class="font-bold text-xl mb-2">Keilmuan dan Kastrat</h3>
-                        <p class="text-gray-500">
+                        <h3 class="font-bold text-xl mb-2" data-key="division-academic-title">Keilmuan dan Kastrat</h3>
+                        <p class="text-gray-500" data-key="division-academic-desc">
                             Kami hadir sebagai pusat pengembangan intelektual dan daya kritis mahasiswa. Melalui program keilmuan, kami menyelenggarakan seminar, lokakarya, dan diskusi untuk memperluas wawasan akademik. Sementara itu, melalui Kajian Strategis (Kastrat), kami secara aktif menganalisis isu-isu penting di tingkat universitas maupun nasional, kemudian merumuskan sikap dan rekomendasi kebijakan sebagai dasar gerakan advokasi BEM.
                         </p>
                     </div>
                     <div class="p-6 bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow">
-                        <h3 class="font-bold text-xl mb-2">Bakat dan Minat</h3>
-                        <p class="text-gray-500">
+                        <h3 class="font-bold text-xl mb-2" data-key="division-talent-title">Bakat dan Minat</h3>
+                        <p class="text-gray-500" data-key="division-talent-desc">
                             Kami menjadi wadah bagi seluruh mahasiswa untuk menyalurkan dan mengembangkan potensi di luar bidang akademik. Kami memfasilitasi berbagai kegiatan di bidang olahraga, seni, dan hobi lainnya, mulai dari latihan rutin hingga penyelenggaraan kompetisi dan pertunjukan. Tujuan kami adalah untuk menumbuhkan semangat sportivitas, kreativitas, dan mempererat kebersamaan antar mahasiswa melalui minat yang mereka miliki.
                         </p>
                     </div>
                     <div class="p-6 bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow">
-                        <h3 class="font-bold text-xl mb-2">Keagamaan</h3>
-                        <p class="text-gray-500">
+                        <h3 class="font-bold text-xl mb-2" data-key="division-religious-title">Keagamaan</h3>
+                        <p class="text-gray-500" data-key="division-religious-desc">
                             Kami berfokus pada pembinaan dan peningkatan kualitas spiritual serta moral mahasiswa. Kami secara rutin menyelenggarakan berbagai kegiatan keagamaan, seperti perayaan hari besar, kajian kitab suci, dan acara-acara rohani lainnya. Melalui program kami, kami berupaya menciptakan lingkungan kampus yang harmonis, toleran, dan religius bagi seluruh civitas akademika.
                         </p>
                     </div>
                     <div class="p-6 bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow">
-                        <h3 class="font-bold text-xl mb-2">kehumanitasan</h3>
-                        <p class="text-gray-500">
+                        <h3 class="font-bold text-xl mb-2" data-key="division-humanity-title">kehumanitasan</h3>
+                        <p class="text-gray-500" data-key="division-humanity-desc">
                             Kami bergerak di garda terdepan dalam aksi kepedulian sosial dan pengabdian kepada masyarakat. Kami menginisiasi dan mengorganisir berbagai program kemanusiaan, mulai dari bakti sosial di desa binaan, penggalangan dana untuk korban bencana, hingga kampanye isu sosial. Tujuan utama kami adalah menumbuhkan kepekaan dan jiwa sosial mahasiswa agar dapat memberikan kontribusi nyata bagi masyarakat luas.
                         </p>
                     </div>
                 </div>
             </div>
         </section>
+    </div>
 
-        <section id="berita" class="py-16 px-4 bg-gray-50">
+    <div id="berita" class="tab-content">
+        <section class="py-16 px-4 bg-gray-50">
             <div class="container mx-auto">
-                <h2 class="text-3xl font-bold text-center mb-10">Berita & Artikel Terbaru</h2>
+                <h2 class="text-3xl font-bold text-center mb-10" data-key="news-title">Berita & Artikel Terbaru</h2>
                 <div class="flex justify-center mb-10 hidden" id="add-news-btn-container">
-                    <button id="add-news-btn" class="px-6 py-3 bg-violet-600 text-white font-bold rounded-full shadow-lg hover:bg-violet-700 transition-colors">
+                    <button id="add-news-btn" class="px-6 py-3 bg-violet-600 text-white font-bold rounded-full shadow-lg hover:bg-violet-700 transition-colors" data-key="add-news">
                         Tambah Berita Baru
                     </button>
                 </div>
@@ -159,8 +205,9 @@
                 </div>
             </div>
         </section>
+    </div>
 
-        <footer class="bg-gray-800 text-gray-400 py-6 px-4 text-center mt-auto">
+    <footer class="bg-gray-800 text-gray-400 py-6 px-4 text-center mt-auto">
             <p>&copy; 2024 BEM FKIP UMM Divisi Media & Komunikasi. Hak Cipta Dilindungi.</p>
         </footer>
     </div>
