@@ -14,13 +14,13 @@
 }
 
 [data-theme="dark"] {
-    /* Dark mode palette — bone + maroon branding */
+    /* Dark mode palette — bone + crimson branding */
     --bg-primary: #111827;        /* dark navy/charcoal */
     --bg-secondary: #141C2A;      /* slightly lighter */
     --text-primary: #E5E7EB;      /* off-white text */
     --text-secondary: #B8BFCC;    /* muted secondary text */
-    --accent: #800000;            /* maroon accent */
-    --accent-hover: #6A0000;
+    --accent: #DC143C;            /* crimson accent */
+    --accent-hover: #B01030;      /* deeper crimson for hover */
     --accent-contrast: #FDFBF7;
     --card-bg: #1F2937;           /* card surface */
     --border: rgba(255,255,255,0.08);
@@ -89,11 +89,12 @@ section + section { border-top: 1px solid var(--border); }
 /* Hero & accent overrides (map Tailwind violet utilities to brand maroon) */
 .bg-violet-600, .bg-violet-500, .bg-violet-700 { background-color: var(--accent) !important; color: var(--accent-contrast) !important; }
 .bg-violet-50 { background-color: rgba(128,0,0,0.08) !important; } /* soft maroon tint for icon circles/badges */
+[data-theme="dark"] .bg-violet-50 { background-color: color-mix(in oklab, var(--accent) 18%, transparent) !important; } /* soft crimson tint on dark */
 .hover\:bg-violet-700:hover, .hover\:bg-violet-600:hover, .hover\:bg-violet-500:hover { background-color: var(--accent-hover) !important; }
 .text-violet-600, .text-violet-500, .text-violet-700, .text-violet-400 { color: var(--accent) !important; }
 .hover\:text-violet-600:hover, .hover\:text-violet-500:hover, .hover\:text-violet-700:hover { color: var(--accent-hover) !important; }
 .border-violet-600, .border-violet-500, .border-violet-700 { border-color: var(--accent) !important; }
-.focus\:ring-violet-500:focus { box-shadow: 0 0 0 3px rgba(128,0,0,0.35) !important; border-color: var(--accent) !important; }
+.focus\:ring-violet-500:focus { box-shadow: 0 0 0 3px color-mix(in oklab, var(--accent) 35%, transparent) !important; border-color: var(--accent) !important; }
 .focus\:border-violet-500:focus { border-color: var(--accent) !important; }
 
 /* About/Generic cards */
