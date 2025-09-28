@@ -87,7 +87,8 @@ section + section { border-top: 1px solid var(--border); }
 .shadow, .shadow-md, .shadow-lg, .shadow-xl { box-shadow: 0 8px 24px var(--shadow) !important; }
 
 /* Hero & accent overrides (map Tailwind violet utilities to brand maroon) */
-.bg-violet-600, .bg-violet-500, .bg-violet-700 { background-color: var(--accent) !important; }
+.bg-violet-600, .bg-violet-500, .bg-violet-700 { background-color: var(--accent) !important; color: var(--accent-contrast) !important; }
+.bg-violet-50 { background-color: rgba(128,0,0,0.08) !important; } /* soft maroon tint for icon circles/badges */
 .hover\:bg-violet-700:hover, .hover\:bg-violet-600:hover, .hover\:bg-violet-500:hover { background-color: var(--accent-hover) !important; }
 .text-violet-600, .text-violet-500, .text-violet-700, .text-violet-400 { color: var(--accent) !important; }
 .hover\:text-violet-600:hover, .hover\:text-violet-500:hover, .hover\:text-violet-700:hover { color: var(--accent-hover) !important; }
@@ -220,3 +221,119 @@ body {
 
 /* Tailwind CSS is used via CDN: https://cdn.tailwindcss.com */
 /* The classes applied directly in HTML define the styling. */
+
+/* ===== Admin Login Overhaul (CodePen-inspired) ===== */
+.login-mask {
+    position: fixed;
+    inset: 0;
+    overflow: hidden;
+    background: radial-gradient(1200px 600px at 80% -10%, rgba(128,0,0,0.25), transparent 60%),
+                radial-gradient(800px 400px at 0% 110%, rgba(128,0,0,0.18), transparent 60%),
+                #000; /* fallback while images load */
+}
+.login-mask::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(17,24,39,0.65), rgba(17,24,39,0.35), rgba(17,24,39,0.65));
+    z-index: 0;
+}
+/* Only set layout when visible, so Tailwind .hidden can truly hide */
+.login-mask:not(.hidden) {
+    display: grid;
+    place-items: center;
+}
+
+.login-bg-grid {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    grid-auto-rows: minmax(12.5vh, 1fr);
+    gap: 1px;
+    z-index: 0;
+    filter: saturate(0.8) contrast(0.9) brightness(0.9);
+}
+.login-bg-grid .cell {
+    background-size: cover;
+    background-position: center;
+    opacity: 0.35;
+    animation: loginZoom 18s ease-in-out infinite alternate;
+}
+@keyframes loginZoom {
+    0%   { transform: scale(1); }
+    100% { transform: scale(1.08); }
+}
+
+.login-modal-card {
+    position: relative;
+    z-index: 2;
+    width: min(92vw, 380px);
+    padding: 28px;
+    border-radius: 16px;
+    background: color-mix(in oklab, var(--card-bg) 88%, transparent);
+    border: 1px solid var(--border);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+}
+.login-logo {
+    width: 72px;
+    height: 72px;
+    margin: 0 auto 12px auto;
+    border-radius: 50%;
+    background: url('logo-bem.JPG') center/cover no-repeat;
+    border: 2px solid var(--accent);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+}
+.login-title {
+    text-align: center;
+    font-weight: 700;
+    font-size: 1.5rem;
+    margin-bottom: 12px;
+    color: var(--text-primary);
+}
+.login-form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+.login-input {
+    padding: 12px 14px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--card-bg);
+    color: var(--text-primary);
+    outline: none;
+    transition: border-color .2s ease, box-shadow .2s ease, background-color .2s ease;
+}
+.login-input::placeholder { color: var(--text-secondary); opacity: .9; }
+.login-input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(128,0,0,0.18);
+    background: color-mix(in oklab, var(--card-bg) 96%, var(--accent) 4%);
+}
+
+.login-button {
+    margin-top: 4px;
+    padding: 12px 16px;
+    border: 0;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    background: var(--accent);
+    color: var(--accent-contrast);
+    transition: background .2s ease, transform .1s ease, box-shadow .2s ease;
+    box-shadow: 0 10px 24px rgba(128,0,0,0.25);
+}
+.login-button:hover { background: var(--accent-hover); }
+.login-button:active { transform: translateY(1px); }
+
+.login-error {
+    margin-top: 8px;
+    text-align: center;
+    color: #dc2626;
+    font-size: 0.875rem;
+}
+
+.login-credit { display: none !important; }

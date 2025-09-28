@@ -11,29 +11,68 @@
 </head>
 <body class="bg-gray-100">
 
-    <div id="login-section" class="flex items-center justify-center h-screen hidden">
-        <div class="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md">
-            <div class="text-center">
-                <img src="logo-bem.JPG" alt="Logo BEM FKIP UMM" class="w-20 h-20 mx-auto rounded-full">
-                <h2 class="mt-4 text-2xl font-bold text-gray-900">Admin Login</h2>
-            </div>
-            <form id="login-form" class="space-y-6">
-                <div>
-                    <label for="email-input" class="text-sm font-medium text-gray-700">Email</label>
-                    <input id="email-input" type="email" required class="w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm">
-                </div>
-                <div>
-                    <label for="password-input" class="text-sm font-medium text-gray-700">Password</label>
-                    <input id="password-input" type="password" required class="w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm">
-                </div>
-                <div>
-                    <button type="submit" class="w-full px-4 py-2 font-semibold text-white bg-violet-600 rounded-md hover:bg-violet-700">
-                        Login
-                    </button>
-                </div>
-            </form>
-            <p id="error-message" class="text-sm text-center text-red-600"></p>
+    <!-- Admin Login Overhaul (inspired by CodePen: https://codepen.io/igcorreia/pen/mJbXZY) -->
+    <div id="login-section" class="login-mask hidden">
+        <!-- Mosaic animated background -->
+        <div class="login-bg-grid" aria-hidden="true">
+            <div class="cell" style="background-image:url('https://source.unsplash.com/featured/?sports&sig=1');"></div>
+            <div class="cell" style="background-image:url('https://source.unsplash.com/featured/?nature&sig=2');"></div>
+            <div class="cell" style="background-image:url('https://source.unsplash.com/featured/?business&sig=3');"></div>
+            <div class="cell" style="background-image:url('https://source.unsplash.com/featured/?people&sig=4');"></div>
+            <div class="cell" style="background-image:url('https://source.unsplash.com/featured/?technics&sig=5');"></div>
+            <div class="cell" style="background-image:url('https://source.unsplash.com/featured/?fashion&sig=6');"></div>
+            <div class="cell" style="background-image:url('https://source.unsplash.com/featured/?city&sig=7');"></div>
+            <div class="cell" style="background-image:url('https://source.unsplash.com/featured/?animals&sig=8');"></div>
+
+            <div class="cell" style="background-image:url('https://source.unsplash.com/featured/?sports&sig=9');"></div>
+            <div class="cell" style="background-image:url('https://source.unsplash.com/featured/?nature&sig=10');"></div>
+            <div class="cell" style="background-image:url('https://source.unsplash.com/featured/?business&sig=11');"></div>
+            <div class="cell" style="background-image:url('https://source.unsplash.com/featured/?people&sig=12');"></div>
+            <div class="cell" style="background-image:url('https://source.unsplash.com/featured/?technics&sig=13');"></div>
+            <div class="cell" style="background-image:url('https://source.unsplash.com/featured/?fashion&sig=14');"></div>
+            <div class="cell" style="background-image:url('https://source.unsplash.com/featured/?city&sig=15');"></div>
+            <div class="cell" style="background-image:url('https://source.unsplash.com/featured/?animals&sig=16');"></div>
+
+            <div class="cell" style="background-image:url('https://source.unsplash.com/featured/?sports&sig=17');"></div>
+            <div class="cell" style="background-image:url('https://source.unsplash.com/featured/?nature&sig=18');"></div>
+            <div class="cell" style="background-image:url('https://source.unsplash.com/featured/?business&sig=19');"></div>
+            <div class="cell" style="background-image:url('https://source.unsplash.com/featured/?people&sig=20');"></div>
+            <div class="cell" style="background-image:url('https://source.unsplash.com/featured/?technics&sig=21');"></div>
+            <div class="cell" style="background-image:url('https://source.unsplash.com/featured/?fashion&sig=22');"></div>
+            <div class="cell" style="background-image:url('https://source.unsplash.com/featured/?city&sig=23');"></div>
+            <div class="cell" style="background-image:url('https://source.unsplash.com/featured/?animals&sig=24');"></div>
+
+            <div class="cell" style="background-image:url('https://source.unsplash.com/featured/?sports&sig=25');"></div>
+            <div class="cell" style="background-image:url('https://source.unsplash.com/featured/?nature&sig=26');"></div>
+            <div class="cell" style="background-image:url('https://source.unsplash.com/featured/?business&sig=27');"></div>
+            <div class="cell" style="background-image:url('https://source.unsplash.com/featured/?people&sig=28');"></div>
+            <div class="cell" style="background-image:url('https://source.unsplash.com/featured/?technics&sig=29');"></div>
+            <div class="cell" style="background-image:url('https://source.unsplash.com/featured/?fashion&sig=30');"></div>
+            <div class="cell" style="background-image:url('https://source.unsplash.com/featured/?city&sig=31');"></div>
+            <div class="cell" style="background-image:url('https://source.unsplash.com/featured/?animals&sig=32');"></div>
+
+            <div class="cell" style="background-image:url('https://source.unsplash.com/featured/?sports&sig=33');"></div>
+            <div class="cell" style="background-image:url('https://source.unsplash.com/featured/?nature&sig=34');"></div>
+            <div class="cell" style="background-image:url('https://source.unsplash.com/featured/?business&sig=35');"></div>
+            <div class="cell" style="background-image:url('https://source.unsplash.com/featured/?people&sig=36');"></div>
+            <div class="cell" style="background-image:url('https://source.unsplash.com/featured/?technics&sig=37');"></div>
+            <div class="cell" style="background-image:url('https://source.unsplash.com/featured/?fashion&sig=38');"></div>
+            <div class="cell" style="background-image:url('https://source.unsplash.com/featured/?city&sig=39');"></div>
+            <div class="cell" style="background-image:url('https://source.unsplash.com/featured/?animals&sig=40');"></div>
         </div>
+
+        <!-- Centered glassmorphism login card -->
+        <div class="login-modal-card">
+            <div class="login-logo"></div>
+            <h1 class="login-title">Admin Login</h1>
+            <form id="login-form" class="login-form">
+                <input id="email-input" type="email" placeholder="Email" required class="login-input" autocomplete="username">
+                <input id="password-input" type="password" placeholder="Password" required class="login-input" autocomplete="current-password">
+                <button type="submit" class="login-button">Let me in</button>
+            </form>
+            <p id="error-message" class="login-error"></p>
+        </div>
+
     </div>
 
     <div id="dashboard-section" class="hidden container mx-auto p-8">
