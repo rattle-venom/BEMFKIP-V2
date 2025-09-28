@@ -513,8 +513,8 @@ if (dashboardSection) { // Check if on admin.html
             const contentId = `content-${tab.id.split('-')[1]}`;
             document.getElementById(contentId).classList.remove('hidden');
 
-            if (tab.id === 'tab-gallery') loadGalleryForAdmin();
-            if (tab.id === 'tab-cabinet') loadCabinetData();
+        if (tab.id === 'tab-gallery') loadGalleryForAdmin();
+        if (tab.id === 'tab-cabinet') setTimeout(() => loadCabinetData(), 100);
         });
     });
 
@@ -658,7 +658,14 @@ if (dashboardSection) { // Check if on admin.html
                     }
                 }
                 if (cabinetStatus) cabinetStatus.textContent = "";
-            } else { if (cabinetStatus) cabinetStatus.textContent = "Dokumen kabinet tidak ditemukan."; }
+        } else {
+            // If document doesn't exist, set empty values
+            const inputs = cabinetForm.querySelectorAll('input[type="text"], textarea');
+            inputs.forEach(input => {
+                input.value = '';
+            });
+            if (cabinetStatus) cabinetStatus.textContent = "Dokumen kabinet belum ada. Isi form dan simpan untuk membuat.";
+        }
         } catch (error) { console.error("Error loading cabinet data:", error); }
     }
     if (cabinetForm) {
