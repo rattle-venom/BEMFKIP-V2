@@ -68,7 +68,28 @@ const translations = {
         "division-humanity-title": "Humanitarian Affairs",
         "division-humanity-desc": "We are at the forefront of social care actions and community service. We initiate and organize various humanitarian programs, ranging from social service in fostered villages, fundraising for disaster victims, to social issue campaigns. Our main goal is to foster sensitivity and social spirit in students so that they can make real contributions to the wider community.",
         "news-title": "Latest News & Articles",
-        "add-news": "Add New News"
+        "add-news": "Add New News",
+        "contact-title": "Contact Us",
+        "contact-subtitle": "Feel free to contact us through social media or the email address below.",
+        "contact-info-title": "Contact Information",
+        "address-label": "Address:",
+        "address": "Student Center Building, UMM Campus III, Jl. Raya Tlogomas No. 246, Malang, East Java 65144",
+        "email-label": "Email:",
+        "social-label": "Social Media:",
+        "send-message": "Send Message",
+        "full-name": "Full Name",
+        "message": "Message",
+        "send": "Send",
+        "structure-title": "Cabinet Structure",
+        "structure-subtitle": "Get to know the leaders and members who drive BEM FKIP UMM.",
+        "cabinet-structure-title": "BEM FKIP UMM Cabinet Structure 2025/2026",
+        "governor-title": "Student Governor",
+        "vice-governor-title": "Vice Student Governor",
+        "secretary-title": "General Secretary",
+        "treasurer-title": "General Treasurer",
+        "division-head": "Division Head",
+        "division-secretary": "Division Secretary",
+        "members": "Members"
     }
 };
 
@@ -195,6 +216,39 @@ if (logoutBtn) {
     });
 }
 
+// --- Login Modal Handling (Common for all pages) ---
+const loginModal = document.getElementById('login-modal');
+const loginFormOverlay = document.getElementById('login-form-overlay');
+const closeLoginBtn = document.getElementById('close-login-btn');
+const loginErrorMessage = document.getElementById('login-error-message');
+
+if (loginBtn) {
+    loginBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        if (loginModal) loginModal.classList.remove('hidden');
+    });
+}
+if (closeLoginBtn) closeLoginBtn.addEventListener('click', () => { if (loginModal) loginModal.classList.add('hidden'); });
+if (loginFormOverlay) {
+    loginFormOverlay.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = document.getElementById('email-input-overlay').value;
+        const password = document.getElementById('password-input-overlay').value;
+        try {
+            await signInWithEmailAndPassword(auth, email, password);
+            if (loginModal) loginModal.classList.add('hidden');
+            loginFormOverlay.reset();
+            if (loginErrorMessage) loginErrorMessage.classList.add('hidden');
+            window.location.href = '/admin';
+        } catch (error) {
+            if (loginErrorMessage) {
+                loginErrorMessage.textContent = "Email atau password salah.";
+                loginErrorMessage.classList.remove('hidden');
+            }
+        }
+    });
+}
+
 // --- Page Specific Logic ---
 
 // --- /galeri.html specific logic ---
@@ -269,38 +323,7 @@ if (newsContainer) { // Check if on index.html
         });
     }
 
-    // --- Login Modal Handling ---
-    const loginModal = document.getElementById('login-modal');
-    const loginFormOverlay = document.getElementById('login-form-overlay');
-    const closeLoginBtn = document.getElementById('close-login-btn');
-    const loginErrorMessage = document.getElementById('login-error-message');
 
-    if (loginBtn) {
-        loginBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            if (loginModal) loginModal.classList.remove('hidden');
-        });
-    }
-    if (closeLoginBtn) closeLoginBtn.addEventListener('click', () => { if (loginModal) loginModal.classList.add('hidden'); });
-    if (loginFormOverlay) {
-        loginFormOverlay.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const email = document.getElementById('email-input-overlay').value;
-            const password = document.getElementById('password-input-overlay').value;
-            try {
-                await signInWithEmailAndPassword(auth, email, password);
-                if (loginModal) loginModal.classList.add('hidden');
-                loginFormOverlay.reset();
-                if (loginErrorMessage) loginErrorMessage.classList.add('hidden');
-                window.location.href = '/admin';
-            } catch (error) {
-                if (loginErrorMessage) {
-                    loginErrorMessage.textContent = "Email atau password salah.";
-                    loginErrorMessage.classList.remove('hidden');
-                }
-            }
-        });
-    }
 
     // --- Auth Gate Helper ---
     function checkAuthAndGate() {
@@ -347,9 +370,6 @@ if (newsContainer) { // Check if on index.html
 
     // Call checkAuthAndGate at the end
     checkAuthAndGate();
-
-    // Initialize new features
-    initFeatures();
 }
 
 // --- /news-detail.html specific logic ---
@@ -659,3 +679,6 @@ if (dashboardSection) { // Check if on admin.html
         });
     }
 }
+
+// --- Initialize Features for all pages ---
+initFeatures();

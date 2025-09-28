@@ -23,11 +23,15 @@
                 <span>BEM FKIP UMM</span>
             </a>
             <div class="flex-grow flex justify-center sm:justify-end mt-4 sm:mt-0 space-x-4">
-                <a href="index.html#tentang" class="text-gray-600 hover:text-violet-600 font-medium transition-colors">Tentang Kami</a>
-                <a href="index.html#berita" class="text-gray-600 hover:text-violet-600 font-medium transition-colors">Berita</a>
-                <a href="/galeri" class="text-gray-600 hover:text-violet-600 font-medium transition-colors">Galeri</a>
-                <a href="/struktural" class="text-gray-600 hover:text-violet-600 font-medium transition-colors">Struktural Kabinet</a>
-                <a href="/kontak" class="text-gray-600 hover:text-violet-600 font-medium transition-colors">Kontak</a>
+                <a href="index.html#tentang" class="text-gray-600 hover:text-violet-600 font-medium transition-colors" data-key="about">Tentang Kami</a>
+                <a href="index.html#berita" class="text-gray-600 hover:text-violet-600 font-medium transition-colors" data-key="news">Berita</a>
+                <a href="/galeri" class="text-gray-600 hover:text-violet-600 font-medium transition-colors" data-key="gallery">Galeri</a>
+                <a href="/struktural" class="text-gray-600 hover:text-violet-600 font-medium transition-colors" data-key="structure">Struktural Kabinet</a>
+                <a href="/kontak" class="text-violet-600 font-bold" data-key="contact">Kontak</a>
+                <div class="toggle-container">
+                    <button id="theme-toggle" class="theme-toggle" title="Toggle Theme">🌙</button>
+                    <button id="lang-toggle" class="lang-toggle" title="Switch Language">EN</button>
+                </div>
             </div>
         </nav>
     </header>
@@ -35,26 +39,26 @@
     <!-- Contact Section -->
     <main class="py-16 px-4">
         <div class="container mx-auto text-center">
-            <h1 class="text-4xl font-bold mb-4">Hubungi Kami</h1>
-            <p class="text-gray-600 max-w-2xl mx-auto mb-10">
+            <h1 class="text-4xl font-bold mb-4" data-key="contact-title">Hubungi Kami</h1>
+            <p class="text-gray-600 max-w-2xl mx-auto mb-10" data-key="contact-subtitle">
                 Jangan ragu untuk menghubungi kami melalui media sosial atau alamat email di bawah ini.
             </p>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <!-- Contact Info Card -->
                 <div class="p-8 bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow">
-                    <h2 class="text-2xl font-bold mb-4">Informasi Kontak</h2>
+                    <h2 class="text-2xl font-bold mb-4" data-key="contact-info-title">Informasi Kontak</h2>
                     <ul class="text-gray-600 space-y-3 text-left max-w-md mx-auto">
                         <li>
-                            <p class="font-semibold text-violet-600">Alamat:</p>
-                            <p>Gedung Student Center, Kampus III UMM, Jl. Raya Tlogomas No. 246, Malang, Jawa Timur 65144</p>
+                            <p class="font-semibold text-violet-600" data-key="address-label">Alamat:</p>
+                            <p data-key="address">Gedung Student Center, Kampus III UMM, Jl. Raya Tlogomas No. 246, Malang, Jawa Timur 65144</p>
                         </li>
                         <li>
-                            <p class="font-semibold text-violet-600">Email:</p>
+                            <p class="font-semibold text-violet-600" data-key="email-label">Email:</p>
                             <a href="mailto:ummbemfkip@gmail.com" class="hover:underline">ummbemfkip@gmail.com</a>
                         </li>
                         <li>
-                            <p class="font-semibold text-violet-600">Media Sosial:</p>
+                            <p class="font-semibold text-violet-600" data-key="social-label">Media Sosial:</p>
                             <div class="flex justify-start space-x-4 mt-2">
                                 <a href="https://www.instagram.com/bemfkipumm/" target="_blank" class="text-gray-500 hover:text-violet-600 transition-colors">
                                     <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -69,21 +73,21 @@
 
                 <!-- Contact Form Card -->
                 <div class="p-8 bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow">
-                    <h2 class="text-2xl font-bold mb-4">Kirim Pesan</h2>
+                    <h2 class="text-2xl font-bold mb-4" data-key="send-message">Kirim Pesan</h2>
                     <form action="https://formspree.io/f/xblabdkr" method="POST" class="space-y-4 text-left">
                         <div>
-                            <label for="name" class="block text-gray-700">Nama Lengkap</label>
+                            <label for="name" class="block text-gray-700" data-key="full-name">Nama Lengkap</label>
                             <input type="text" id="name" name="name" class="w-full mt-1 p-2 border border-gray-300 rounded-md focus:ring-violet-500 focus:border-violet-500">
                         </div>
                         <div>
-                            <label for="email" class="block text-gray-700">Email</label>
+                            <label for="email" class="block text-gray-700" data-key="email">Email</label>
                             <input type="email" id="email" name="_replyto" class="w-full mt-1 p-2 border border-gray-300 rounded-md focus:ring-violet-500 focus:border-violet-500">
                         </div>
                         <div>
-                            <label for="message" class="block text-gray-700">Pesan</label>
+                            <label for="message" class="block text-gray-700" data-key="message">Pesan</label>
                             <textarea id="message" name="message" rows="4" class="w-full mt-1 p-2 border border-gray-300 rounded-md focus:ring-violet-500 focus:border-violet-500"></textarea>
                         </div>
-                        <button type="submit" class="w-full bg-violet-600 text-white font-medium py-2 px-4 rounded-md hover:bg-violet-700 transition-colors">
+                        <button type="submit" class="w-full bg-violet-600 text-white font-medium py-2 px-4 rounded-md hover:bg-violet-700 transition-colors" data-key="send">
                             Kirim
                         </button>
                     </form>
@@ -96,6 +100,35 @@
     <footer class="bg-gray-800 text-gray-400 py-6 px-4 text-center mt-auto">
         <p>&copy; 2025 BEM FKIP UMM Divisi Media & Komunikasi. Hak Cipta Dilindungi.</p>
     </footer>
+
+    <div id="login-modal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div class="mt-3 text-center">
+                <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">Login Admin</h3>
+                <form id="login-form-overlay">
+                    <div class="space-y-4">
+                        <div>
+                            <label for="email-input-overlay" class="block text-sm font-medium text-gray-700">Email</label>
+                            <input type="email" id="email-input-overlay" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-violet-500 focus:border-violet-500">
+                        </div>
+                        <div>
+                            <label for="password-input-overlay" class="block text-sm font-medium text-gray-700">Password</label>
+                            <input type="password" id="password-input-overlay" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-violet-500 focus:border-violet-500">
+                        </div>
+                    </div>
+                    <div class="items-center px-4 py-3 mt-4 text-right bg-gray-50 -mx-5 -mb-5 rounded-b-md">
+                        <button id="close-login-btn" type="button" class="px-4 py-2 bg-gray-200 text-gray-800 text-base font-medium rounded-md shadow-sm hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 mr-2">
+                            Batal
+                        </button>
+                        <button type="submit" class="px-4 py-2 bg-violet-600 text-white text-base font-medium rounded-md shadow-sm hover:bg-violet-700 focus:outline-none focus:ring-2 focus:ring-violet-500">
+                            Login
+                        </button>
+                    </div>
+                </form>
+                <p id="login-error-message" class="text-red-500 text-sm mt-2 hidden"></p>
+            </div>
+        </div>
+    </div>
 
 </body>
 </html>
