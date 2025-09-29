@@ -153,17 +153,100 @@ async function getUserRole(uid) {
 function isAdminish() {
     return currentUserRole === ROLE.ADMIN || currentUserRole === ROLE.SUPERADMIN;
 }
+function isSuper() {
+    return currentUserRole === ROLE.SUPERADMIN;
+}
 
 function setRoleBadge(role) {
     const badge = document.getElementById('role-badge');
     if (!badge) return;
-    let icon = '🎓', label = 'BEM', color = 'bg-gray-200 text-gray-800';
-    if (role === ROLE.ADMIN) { icon = '🧰'; label = 'ADMIN'; color = 'bg-blue-100 text-blue-800'; }
-    if (role === ROLE.SUPERADMIN) { icon = '🛡️'; label = 'SUPERADMIN'; color = 'bg-red-100 text-red-800'; }
-    // icon-only badge; tooltip shows the label
-    badge.className = `inline-flex items-center justify-center w-8 h-8 rounded-full text-sm ${color}`;
+    // map roles to custom images (placed in the project root)
+    let src = 'role-BEM.png', label = 'BEM';
+    if (role === ROLE.ADMIN) { src = 'role-admin.png'; label = 'ADMIN'; }
+    if (role === ROLE.SUPERADMIN) { src = 'role-superAdmin.png'; label = 'SUPERADMIN'; }
+    // render as image-only badge
+    badge.className = 'inline-flex items-center justify-center w-8 h-8'; // removes 'hidden'
     badge.title = label;
-    badge.textContent = icon;
+    badge.innerHTML = `<img src="${src}" alt="${label} badge" class="w-8 h-8 rounded-full object-cover" />`;
+}
+
+/* Audit logging helper (SUPERADMIN-only read via rules) */
+async function logActivity(action, payload = {}) {
+    try {
+        const user = auth.currentUser;
+        if (!user) return; // only log for authenticated users
+        await addDoc(collection(db, "audit_logs"), {
+            uid: user.uid,
+            email: user.email || "",
+            action,
+            payload,
+            path: location.pathname + location.hash,
+            userAgent: navigator.userAgent,
+            at: serverTimestamp()
+        });
+    } catch (e) {
+        console.warn("audit log failed:", e);
+    }
+}
+
+// helpers to build human descriptions and diffs for updates
+function stringifyVal(v) {
+    if (Array.isArray(v)) return v.join(', ');
+    if (v === undefined || v === null) return '';
+    return String(v);
+}
+function diffObjects(before = {}, after = {}) {
+    const changes = [];
+    const keys = new Set([...Object.keys(before || {}), ...Object.keys(after || {})]);
+    keys.forEach((k) => {
+        const a = stringifyVal(before ? before[k] : '');
+        const b = stringifyVal(after ? after[k] : '');
+        if (a !== b) changes.push({ key: k, before: a, after: b });
+    });
+    return changes;
+}
+function trunc(s, len = 60) {
+    if (s == null) return '';
+    const t = String(s).replace(/\s+/g, ' ').trim();
+    return t.length > len ? t.slice(0, len) + '…' : t;
+}
+function describeLog(log) {
+    const a = log.action;
+    const p = log.payload || {};
+    switch (a) {
+        case 'login': return 'This user logged in';
+        case 'logout': return 'This user logged out';
+        case 'news_add': return `This user added news "${p.title || p.docId || ''}"`;
+        case 'news_edit': {
+            // Simple human summary listing which parts were changed (exclude auto fields)
+            const labelMap = {
+                title: 'Title of the news',
+                content: 'Content of the news',
+                imageUrl: 'Image link of the news',
+                date: 'Date of the news',
+                category: 'Category of the news',
+                author: 'Author of the news'
+            };
+            const fieldsAll = Array.isArray(p.fields) && p.fields.length
+                ? p.fields
+                : (Array.isArray(p.changes) ? p.changes.map(c => c.key) : []);
+            const fields = fieldsAll.filter(k => k !== 'date' && k !== 'updatedAt');
+            const parts = fields.map(k => labelMap[k] || k);
+            if (!parts.length) return 'This user edited a news item';
+            return `This user changed ${parts.join(', ')}`;
+        }
+        case 'news_delete': return `This user deleted news "${p.title || p.docId || ''}"`;
+        case 'gallery_add': return `This user added photo "${p.caption || p.docId || ''}"`;
+        case 'gallery_delete': return `This user deleted photo "${p.caption || p.docId || ''}"`;
+        case 'cabinet_update':
+            if (Array.isArray(p.changes) && p.changes.length) {
+                const parts = p.changes.slice(0, 3).map(c => `${c.key} from "${c.before}" to "${c.after}"`);
+                const extra = p.changes.length > 3 ? `, +${p.changes.length - 3} more` : '';
+                return `This user updated cabinet: ${parts.join('; ')}${extra}`;
+            }
+            return 'This user updated cabinet';
+        default: return `This user performed ${a || 'an action'}`;
+    }
 }
  
 // --- Tab Switching Logic ---
@@ -339,8 +422,9 @@ if (auth) {
 
 // --- Logout Button Functionality (Common) ---
 if (logoutBtn) {
-    logoutBtn.addEventListener('click', (e) => {
+    logoutBtn.addEventListener('click', async (e) => {
         e.preventDefault();
+        await logActivity('logout', {});
         signOut(auth).catch((error) => console.error("Sign Out Error", error));
     });
 }
@@ -365,6 +449,7 @@ if (loginFormOverlay) {
         const password = document.getElementById('password-input-overlay').value;
         try {
             await signInWithEmailAndPassword(auth, email, password);
+            await logActivity('login', {});
             if (loginModal) loginModal.classList.add('hidden');
             loginFormOverlay.reset();
             if (loginErrorMessage) loginErrorMessage.classList.add('hidden');
@@ -409,8 +494,9 @@ if (mobileLoginBtn) {
     });
 }
 if (mobileLogoutBtn) {
-    mobileLogoutBtn.addEventListener('click', (e) => {
+    mobileLogoutBtn.addEventListener('click', async (e) => {
         e.preventDefault();
+        await logActivity('logout', {});
         signOut(auth).catch((error) => console.error("Sign Out Error", error));
         if (mobileMenu) mobileMenu.classList.add('hidden');
         if (mobileMenuButton) mobileMenuButton.setAttribute('aria-expanded', 'false');
@@ -481,7 +567,8 @@ if (newsContainer) { // Check if on index.html
                 date: new Date().toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' })
             };
             try {
-                await addDoc(collection(db, "news"), newsData);
+                const docRef = await addDoc(collection(db, "news"), newsData);
+                await logActivity('news_add', { docId: docRef.id, title: newsData.title });
                 newsFormModal.classList.add('hidden');
                 addNewsForm.reset();
                 showModal("Berhasil!", "Berita baru telah ditambahkan.");
@@ -663,10 +750,15 @@ const addPhotoStatus = document.getElementById('add-photo-status');
 const galleryListContainer = document.getElementById('gallery-list-container');
 const cabinetForm = document.getElementById('cabinet-form');
 const cabinetStatus = document.getElementById('cabinet-status');
+const logsListContainer = document.getElementById('logs-list-container');
+const logsStatus = document.getElementById('logs-status');
 
 if (dashboardSection) { // Check if on admin.html
     // Cabinet real-time listener unsubscribe holder
     let cabinetUnsub = null;
+
+    // Logs real-time listener unsubscribe holder
+    let logsUnsub = null;
 
     // --- TAB SWITCHING ---
     tabs.forEach(tab => {
@@ -684,10 +776,12 @@ if (dashboardSection) { // Check if on admin.html
             const target = document.getElementById(contentId);
             if (target) { target.classList.remove('hidden'); target.classList.add('active'); }
 
-            // stop previous cabinet listener when changing tabs
+            // stop previous listeners when changing tabs
             if (typeof cabinetUnsub === 'function') { cabinetUnsub(); cabinetUnsub = null; }
+            if (typeof logsUnsub === 'function') { logsUnsub(); logsUnsub = null; }
             if (tab.id === 'tab-gallery') loadGalleryForAdmin();
             if (tab.id === 'tab-cabinet') startCabinetListener();
+            if (tab.id === 'tab-logs') startLogsListener();
         });
     });
 
@@ -697,6 +791,12 @@ if (dashboardSection) { // Check if on admin.html
             await ensureUserDoc(user);
             currentUserRole = await getUserRole(user.uid);
             setRoleBadge(currentUserRole);
+            // Show/hide Audit Logs tab based on SUPERADMIN
+            const logsTabBtn = document.getElementById('tab-logs');
+            if (logsTabBtn) {
+                if (isSuper()) logsTabBtn.classList.remove('hidden');
+                else logsTabBtn.classList.add('hidden');
+            }
 
             if (isAdminish()) {
                 if (loginSection) loginSection.classList.add('hidden');
@@ -709,7 +809,7 @@ if (dashboardSection) { // Check if on admin.html
                 if (loginSection) {
                     loginSection.classList.remove('hidden');
                     const err = document.getElementById('error-message');
-                    if (err) err.textContent = "Akses ditolak: peran Anda tidak memiliki izin.";
+                    if (err) err.textContent = "Akses ditolak: Anda tidak memiliki izin.";
                 }
                 if (dashboardSection) dashboardSection.classList.add('hidden');
             }
@@ -717,19 +817,23 @@ if (dashboardSection) { // Check if on admin.html
             currentUserRole = null;
             if (loginSection) loginSection.classList.remove('hidden');
             if (dashboardSection) dashboardSection.classList.add('hidden');
+            const logsTabBtn = document.getElementById('tab-logs');
+            if (logsTabBtn) logsTabBtn.classList.add('hidden');
         }
     });
     if (loginForm) {
-        loginForm.addEventListener('submit', (e) => {
+        loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            signInWithEmailAndPassword(auth, e.target.elements['email-input'].value, e.target.elements['password-input'].value)
-                .then(() => { 
-                    // Hide login and show dashboard instead of redirecting
-                    if (loginSection) loginSection.classList.add('hidden');
-                    if (dashboardSection) dashboardSection.classList.remove('hidden');
-                    loadNewsForAdmin();
-                })
-                .catch((error) => { document.getElementById('error-message').textContent = "Email atau password salah."; });
+            try {
+                await signInWithEmailAndPassword(auth, e.target.elements['email-input'].value, e.target.elements['password-input'].value);
+                await logActivity('login', {});
+                // Hide login and show dashboard instead of redirecting
+                if (loginSection) loginSection.classList.add('hidden');
+                if (dashboardSection) dashboardSection.classList.remove('hidden');
+                loadNewsForAdmin();
+            } catch (error) {
+                document.getElementById('error-message').textContent = "Email atau password salah.";
+            }
         });
     }
 
@@ -744,7 +848,8 @@ if (dashboardSection) { // Check if on admin.html
                 author: 'BEM FKIP', date: new Date().toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' })
             };
             try {
-                await addDoc(collection(db, "news"), newsData);
+                const docRef = await addDoc(collection(db, "news"), newsData);
+                await logActivity('news_add', { docId: docRef.id, title: newsData.title });
                 addNewsFormAdmin.reset();
                 if (successMessage) successMessage.textContent = "Berita berhasil ditambahkan!";
                 setTimeout(() => { if (successMessage) successMessage.textContent = ''; }, 3000);
@@ -770,7 +875,13 @@ if (dashboardSection) { // Check if on admin.html
             if (!newsId) return;
             if (e.target.classList.contains('delete-btn')) {
                 if (!isAdminish()) { alert("Akses ditolak."); return; }
-                if (confirm("Yakin ingin menghapus berita ini?")) { await deleteDoc(doc(db, "news", newsId)); }
+                if (confirm("Yakin ingin menghapus berita ini?")) { 
+                    const ref = doc(db, "news", newsId);
+                    const snap = await getDoc(ref);
+                    const title = snap.exists() ? (snap.data().title || '') : '';
+                    await deleteDoc(ref); 
+                    await logActivity('news_delete', { docId: newsId, title });
+                }
             }
             if (e.target.classList.contains('edit-btn')) {
                 if (!isAdminish()) { alert("Akses ditolak."); return; }
@@ -798,7 +909,14 @@ if (dashboardSection) { // Check if on admin.html
                 title: e.target.elements['edit-news-title'].value, content: e.target.elements['edit-news-content'].value,
                 imageUrl: e.target.elements['edit-news-image'].value, category: e.target.elements['edit-news-category'].value,
             };
+            const prevSnap = await getDoc(doc(db, "news", newsId));
+            const prevData = prevSnap.exists() ? prevSnap.data() : {};
+            const changes = diffObjects(prevData, updatedData);
+            const ignore = new Set(['date','updatedAt']);
+            const filteredChanges = changes.filter(c => !ignore.has(c.key));
+            const fields = filteredChanges.map(c => c.key);
             await updateDoc(doc(db, "news", newsId), updatedData);
+            await logActivity('news_edit', { docId: newsId, title: prevData.title || updatedData.title || '', changes: filteredChanges, fields });
             if (editNewsModal) editNewsModal.classList.add('hidden');
         });
     }
@@ -814,7 +932,8 @@ if (dashboardSection) { // Check if on admin.html
                 uploadedAt: new Date()
             };
             try {
-                await addDoc(collection(db, "gallery"), photoData);
+                const docRef = await addDoc(collection(db, "gallery"), photoData);
+                await logActivity('gallery_add', { docId: docRef.id, caption: photoData.caption });
                 if (addPhotoStatus) addPhotoStatus.textContent = "Foto berhasil ditambahkan!";
                 addPhotoForm.reset();
                 setTimeout(() => { if (addPhotoStatus) addPhotoStatus.textContent = ''; }, 3000);
@@ -838,9 +957,64 @@ if (dashboardSection) { // Check if on admin.html
         galleryListContainer.addEventListener('click', async (e) => {
             if (e.target.classList.contains('delete-photo-btn')) {
                 if (!isAdminish()) { alert("Akses ditolak."); return; }
-                if (confirm("Yakin ingin menghapus foto ini?")) { await deleteDoc(doc(db, "gallery", e.target.dataset.id)); }
+                if (confirm("Yakin ingin menghapus foto ini?")) { 
+                    const id = e.target.dataset.id;
+                    const ref = doc(db, "gallery", id);
+                    const snap = await getDoc(ref);
+                    const caption = snap.exists() ? (snap.data().caption || '') : '';
+                    await deleteDoc(ref); 
+                    await logActivity('gallery_delete', { docId: id, caption });
+                }
             }
         });
+    }
+
+    // --- AUDIT LOGS (SUPERADMIN only) ---
+    function startLogsListener() {
+        // Guard by role
+        if (!isSuper()) {
+            if (logsStatus) logsStatus.textContent = "Akses ditolak.";
+            if (logsListContainer) logsListContainer.innerHTML = '';
+            return;
+        }
+        if (typeof logsUnsub === 'function') { logsUnsub(); logsUnsub = null; }
+        if (logsStatus) logsStatus.textContent = "Memuat log...";
+
+        try {
+            const logsQuery = query(collection(db, "audit_logs"), orderBy("at", "desc"));
+            logsUnsub = onSnapshot(logsQuery, (snapshot) => {
+                if (!logsListContainer) return;
+                if (snapshot.empty) {
+                    logsListContainer.innerHTML = '<p class="text-gray-500">Belum ada log.</p>';
+                    if (logsStatus) logsStatus.textContent = "";
+                    return;
+                }
+                let html = '';
+                snapshot.forEach(d => {
+                    const log = d.data();
+                    const ts = log.at && typeof log.at.toDate === 'function' ? log.at.toDate().toLocaleString('id-ID') : '-';
+                    const who = log.email || log.uid || '';
+                    const message = describeLog(log);
+                    html += `
+                        <div class="p-3 border rounded-md bg-gray-50">
+                            <div class="flex items-center justify-between text-xs text-gray-500">
+                                <span>${ts}</span>
+                                <span>${who}</span>
+                            </div>
+                            <div class="mt-1 text-sm text-gray-800">${message}</div>
+                        </div>
+                    `;
+                });
+                logsListContainer.innerHTML = html;
+                if (logsStatus) logsStatus.textContent = "";
+            }, (error) => {
+                console.error("logs listener error:", error);
+                if (logsStatus) logsStatus.textContent = "Gagal memuat log.";
+            });
+        } catch (e) {
+            console.error("startLogsListener error:", e);
+            if (logsStatus) logsStatus.textContent = "Gagal memuat log.";
+        }
     }
 
     // --- CABINET MANAGEMENT ---
@@ -883,7 +1057,11 @@ if (dashboardSection) { // Check if on admin.html
                 } else { updatedData[input.id] = input.value; }
             });
             try {
+                const prevSnap = await getDoc(cabinetDocRef);
+                const prevData = prevSnap.exists() ? prevSnap.data() : {};
+                const changes = diffObjects(prevData, updatedData);
                 await setDoc(cabinetDocRef, updatedData);
+                await logActivity('cabinet_update', { changes });
                 if (cabinetStatus) cabinetStatus.textContent = "Struktur kabinet berhasil diperbarui!";
                 setTimeout(() => { if (cabinetStatus) cabinetStatus.textContent = '' }, 3000);
             } catch (error) { if (cabinetStatus) cabinetStatus.textContent = "Gagal memperbarui data."; }
