@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, deleteDoc, getDoc, updateDoc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -189,6 +189,22 @@ async function logActivity(action, payload = {}) {
     }
 }
 
+// --- Invite codes helpers ---
+async function sha256Hex(text) {
+    const enc = new TextEncoder();
+    const data = enc.encode(text);
+    const hash = await crypto.subtle.digest('SHA-256', data);
+    return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+function randomCode(len = 12) {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789abcdefghijkmnpqrstuvwxyz';
+    let out = '';
+    const arr = new Uint32Array(len);
+    crypto.getRandomValues(arr);
+    for (let i = 0; i < len; i++) out += chars[arr[i] % chars.length];
+    return out;
+}
+ 
 // helpers to build human descriptions and diffs for updates
 function stringifyVal(v) {
     if (Array.isArray(v)) return v.join(', ');
@@ -245,6 +261,14 @@ function describeLog(log) {
                 return `This user updated cabinet: ${parts.join('; ')}${extra}`;
             }
             return 'This user updated cabinet';
+        case 'invite_generate':
+            return `This user generated an invite code (${(p.codeId || '').slice(0,8)}…)`;
+        case 'invite_revoke':
+            return `This user revoked an invite code (${(p.codeId || '').slice(0,8)}…)`;
+        case 'signup_success':
+            return `Signup success for ${p.email || p.uid || ''} using code ${(p.codeId || '').slice(0,8)}…`;
+        case 'signup_fail':
+            return `Signup failed: ${p.reason || 'unknown'}`;
         default: return `This user performed ${a || 'an action'}`;
     }
 }
@@ -434,6 +458,12 @@ const loginModal = document.getElementById('login-modal');
 const loginFormOverlay = document.getElementById('login-form-overlay');
 const closeLoginBtn = document.getElementById('close-login-btn');
 const loginErrorMessage = document.getElementById('login-error-message');
+// Signup modal elements
+const signupModal = document.getElementById('signup-modal');
+const signupForm = document.getElementById('signup-form');
+const closeSignupBtn = document.getElementById('close-signup-btn');
+const signupErrorMessage = document.getElementById('signup-error-message');
+const openSignupBtn = document.getElementById('open-signup-btn');
 
 if (loginBtn) {
     loginBtn.addEventListener('click', (e) => {
@@ -442,6 +472,44 @@ if (loginBtn) {
     });
 }
 if (closeLoginBtn) closeLoginBtn.addEventListener('click', () => { if (loginModal) loginModal.classList.add('hidden'); });
+if (openSignupBtn) {
+    openSignupBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        if (loginModal) loginModal.classList.add('hidden');
+        if (signupModal) signupModal.classList.remove('hidden');
+    });
+}
+if (closeSignupBtn) closeSignupBtn.addEventListener('click', () => { if (signupModal) signupModal.classList.add('hidden'); });
+if (signupForm) {
+    signupForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = document.getElementById('signup-email-input').value.trim();
+        const password = document.getElementById('signup-password-input').value;
+        const code = document.getElementById('signup-security-code-input').value.trim();
+        try {
+            const hash = await sha256Hex(code);
+            const invRef = doc(db, "invite_codes", hash);
+            const invSnap = await getDoc(invRef);
+            if (!invSnap.exists() || invSnap.data().used) {
+                if (signupErrorMessage) signupErrorMessage.textContent = "Security code tidak valid atau sudah digunakan.";
+                await logActivity('signup_fail', { reason: 'invalid_or_used', codeId: hash });
+                return;
+            }
+            const cred = await createUserWithEmailAndPassword(auth, email, password);
+            await ensureUserDoc(cred.user);
+            await setDoc(doc(db, "users", cred.user.uid), { role: ROLE.BEM, email: cred.user.email || email }, { merge: true });
+            await updateDoc(invRef, { used: true, usedBy: cred.user.uid, usedAt: serverTimestamp() });
+            await logActivity('signup_success', { uid: cred.user.uid, email: cred.user.email || email, codeId: hash });
+            if (signupModal) signupModal.classList.add('hidden');
+            signupForm.reset();
+            if (signupErrorMessage) signupErrorMessage.textContent = "";
+        } catch (err) {
+            console.error("signup error:", err);
+            if (signupErrorMessage) signupErrorMessage.textContent = "Pendaftaran gagal. Coba lagi.";
+            await logActivity('signup_fail', { reason: err && err.code ? err.code : String(err) });
+        }
+    });
+}
 if (loginFormOverlay) {
     loginFormOverlay.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -752,6 +820,15 @@ const cabinetForm = document.getElementById('cabinet-form');
 const cabinetStatus = document.getElementById('cabinet-status');
 const logsListContainer = document.getElementById('logs-list-container');
 const logsStatus = document.getElementById('logs-status');
+// Invites (SUPERADMIN)
+const generateInviteBtn = document.getElementById('generate-invite-btn');
+const invitesStatus = document.getElementById('invites-status');
+const invitesListContainer = document.getElementById('invites-list-container');
+const inviteNoteInput = document.getElementById('invite-note-input');
+const inviteCodeModal = document.getElementById('invite-code-modal');
+const invitePlaintextInput = document.getElementById('invite-plaintext');
+const copyInviteBtn = document.getElementById('copy-invite-btn');
+const closeInviteModalBtn = document.getElementById('close-invite-modal');
 
 if (dashboardSection) { // Check if on admin.html
     // Cabinet real-time listener unsubscribe holder
@@ -759,6 +836,9 @@ if (dashboardSection) { // Check if on admin.html
 
     // Logs real-time listener unsubscribe holder
     let logsUnsub = null;
+
+    // Invites real-time listener unsubscribe holder
+    let invitesUnsub = null;
 
     // --- TAB SWITCHING ---
     tabs.forEach(tab => {
@@ -779,8 +859,10 @@ if (dashboardSection) { // Check if on admin.html
             // stop previous listeners when changing tabs
             if (typeof cabinetUnsub === 'function') { cabinetUnsub(); cabinetUnsub = null; }
             if (typeof logsUnsub === 'function') { logsUnsub(); logsUnsub = null; }
+            if (typeof invitesUnsub === 'function') { invitesUnsub(); invitesUnsub = null; }
             if (tab.id === 'tab-gallery') loadGalleryForAdmin();
             if (tab.id === 'tab-cabinet') startCabinetListener();
+            if (tab.id === 'tab-invites') startInvitesListener();
             if (tab.id === 'tab-logs') startLogsListener();
         });
     });
@@ -791,11 +873,16 @@ if (dashboardSection) { // Check if on admin.html
             await ensureUserDoc(user);
             currentUserRole = await getUserRole(user.uid);
             setRoleBadge(currentUserRole);
-            // Show/hide Audit Logs tab based on SUPERADMIN
+            // Show/hide SUPERADMIN tabs
             const logsTabBtn = document.getElementById('tab-logs');
+            const invitesTabBtn = document.getElementById('tab-invites');
             if (logsTabBtn) {
                 if (isSuper()) logsTabBtn.classList.remove('hidden');
                 else logsTabBtn.classList.add('hidden');
+            }
+            if (invitesTabBtn) {
+                if (isSuper()) invitesTabBtn.classList.remove('hidden');
+                else invitesTabBtn.classList.add('hidden');
             }
 
             if (isAdminish()) {
@@ -815,16 +902,20 @@ if (dashboardSection) { // Check if on admin.html
                 // Ensure any admin-only realtime listeners are stopped
                 if (typeof cabinetUnsub === 'function') { cabinetUnsub(); cabinetUnsub = null; }
                 if (typeof logsUnsub === 'function') { logsUnsub(); logsUnsub = null; }
+                if (typeof invitesUnsub === 'function') { invitesUnsub(); invitesUnsub = null; }
             }
         } else {
             currentUserRole = null;
             // Ensure any admin-only realtime listeners are stopped on sign-out
             if (typeof cabinetUnsub === 'function') { cabinetUnsub(); cabinetUnsub = null; }
             if (typeof logsUnsub === 'function') { logsUnsub(); logsUnsub = null; }
+            if (typeof invitesUnsub === 'function') { invitesUnsub(); invitesUnsub = null; }
             if (loginSection) loginSection.classList.remove('hidden');
             if (dashboardSection) dashboardSection.classList.add('hidden');
             const logsTabBtn = document.getElementById('tab-logs');
             if (logsTabBtn) logsTabBtn.classList.add('hidden');
+            const invitesTabBtn = document.getElementById('tab-invites');
+            if (invitesTabBtn) invitesTabBtn.classList.add('hidden');
         }
     });
     if (loginForm) {
@@ -968,6 +1059,108 @@ if (dashboardSection) { // Check if on admin.html
                     const caption = snap.exists() ? (snap.data().caption || '') : '';
                     await deleteDoc(ref); 
                     await logActivity('gallery_delete', { docId: id, caption });
+                }
+            }
+        });
+    }
+
+    // --- INVITE CODES (SUPERADMIN only) ---
+    function startInvitesListener() {
+        if (!isSuper()) {
+            if (invitesStatus) invitesStatus.textContent = "Akses ditolak.";
+            if (invitesListContainer) invitesListContainer.innerHTML = '';
+            return;
+        }
+        if (typeof invitesUnsub === 'function') { invitesUnsub(); invitesUnsub = null; }
+        if (invitesStatus) invitesStatus.textContent = "Memuat daftar kode...";
+        try {
+            const qInv = query(collection(db, "invite_codes"), orderBy("createdAt", "desc"));
+            invitesUnsub = onSnapshot(qInv, async (snapshot) => {
+                if (!invitesListContainer) return;
+                if (snapshot.empty) {
+                    invitesListContainer.innerHTML = '<p class="text-gray-500">Belum ada undangan.</p>';
+                    if (invitesStatus) invitesStatus.textContent = "";
+                    return;
+                }
+                let html = '';
+                snapshot.forEach(d => {
+                    const v = d.data();
+                    const usedBadge = v.used ? '<span class="text-xs px-2 py-0.5 rounded-full bg-green-100 text-green-800">used</span>' : '<span class="text-xs px-2 py-0.5 rounded-full bg-yellow-100 text-yellow-800">unused</span>';
+                    const usedBy = v.usedBy ? v.usedBy : '-';
+                    const ts = v.createdAt && typeof v.createdAt.toDate === 'function' ? v.createdAt.toDate().toLocaleString('id-ID') : '-';
+                    html += `
+                        <div class="p-3 border rounded-md bg-gray-50 flex items-center justify-between">
+                            <div>
+                                <div class="font-semibold text-sm">CodeId: ${d.id.slice(0,8)}…</div>
+                                <div class="text-xs text-gray-600">created: ${ts} • by: ${v.createdBy || '-'}</div>
+                                <div class="text-xs text-gray-600">usedBy: ${usedBy}</div>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                ${usedBadge}
+                                ${v.used ? '' : `<button data-id="${d.id}" class="revoke-invite-btn px-3 py-1 text-sm bg-red-500 text-white rounded-md">Revoke</button>`}
+                            </div>
+                        </div>
+                    `;
+                });
+                invitesListContainer.innerHTML = html;
+                if (invitesStatus) invitesStatus.textContent = "";
+            }, (error) => {
+                console.error("invites listener error:", error);
+                if (invitesStatus) invitesStatus.textContent = "Gagal memuat undangan.";
+            });
+        } catch (e) {
+            console.error("startInvitesListener error:", e);
+            if (invitesStatus) invitesStatus.textContent = "Gagal memuat undangan.";
+        }
+    }
+    if (generateInviteBtn) {
+        generateInviteBtn.addEventListener('click', async () => {
+            if (!isSuper()) { if (invitesStatus) invitesStatus.textContent = "Akses ditolak."; return; }
+            try {
+                const plaintext = randomCode(12);
+                const hash = await sha256Hex(plaintext);
+                const note = inviteNoteInput ? inviteNoteInput.value.trim() : '';
+                await setDoc(doc(db, "invite_codes", hash), {
+                    createdBy: auth.currentUser ? auth.currentUser.uid : '',
+                    createdAt: serverTimestamp(),
+                    used: false,
+                    usedBy: null,
+                    usedAt: null,
+                    role: ROLE.BEM,
+                    note
+                });
+                await logActivity('invite_generate', { codeId: hash });
+                if (invitePlaintextInput) invitePlaintextInput.value = plaintext;
+                if (inviteCodeModal) inviteCodeModal.classList.remove('hidden');
+            } catch (e) {
+                console.error("generate invite error:", e);
+                if (invitesStatus) invitesStatus.textContent = "Gagal membuat kode.";
+            }
+        });
+    }
+    if (copyInviteBtn) {
+        copyInviteBtn.addEventListener('click', async () => {
+            try {
+                const val = invitePlaintextInput ? invitePlaintextInput.value : '';
+                await navigator.clipboard.writeText(val);
+            } catch {}
+        });
+    }
+    if (closeInviteModalBtn) {
+        closeInviteModalBtn.addEventListener('click', () => { if (inviteCodeModal) inviteCodeModal.classList.add('hidden'); });
+    }
+    if (invitesListContainer) {
+        invitesListContainer.addEventListener('click', async (e) => {
+            const target = e.target;
+            if (target && target.classList.contains('revoke-invite-btn')) {
+                const id = target.getAttribute('data-id');
+                if (!id) return;
+                if (!confirm("Revoke kode ini?")) return;
+                try {
+                    await deleteDoc(doc(db, "invite_codes", id));
+                    await logActivity('invite_revoke', { codeId: id });
+                } catch (e) {
+                    console.error("revoke invite error:", e);
                 }
             }
         });

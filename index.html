@@ -109,6 +109,39 @@
                 <button type="submit" class="login-button">Login</button>
             </form>
             <p id="login-error-message" class="login-error hidden"></p>
+            <div class="mt-3 text-center">
+                <a href="#" id="open-signup-btn" class="text-sm text-violet-600 hover:underline">Belum punya akun? Sign up</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Signup Modal -->
+    <div id="signup-modal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div class="mt-1 text-center">
+                <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">Sign Up Anggota BEM</h3>
+                <form id="signup-form">
+                    <div class="space-y-4 text-left">
+                        <div>
+                            <label for="signup-email-input" class="block text-sm font-medium text-gray-700">Email</label>
+                            <input type="email" id="signup-email-input" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm">
+                        </div>
+                        <div>
+                            <label for="signup-password-input" class="block text-sm font-medium text-gray-700">Password</label>
+                            <input type="password" id="signup-password-input" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm">
+                        </div>
+                        <div>
+                            <label for="signup-security-code-input" class="block text-sm font-medium text-gray-700">Security Code</label>
+                            <input type="text" id="signup-security-code-input" required placeholder="Masukkan security code" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm">
+                        </div>
+                    </div>
+                    <div class="items-center px-4 py-3 mt-4 text-right bg-gray-50 -mx-5 -mb-5 rounded-b-md">
+                        <button id="close-signup-btn" type="button" class="px-4 py-2 bg-gray-200 text-gray-800 text-base font-medium rounded-md shadow-sm mr-2">Batal</button>
+                        <button type="submit" class="px-4 py-2 bg-violet-600 text-white text-base font-medium rounded-md shadow-sm">Daftar</button>
+                    </div>
+                </form>
+                <p id="signup-error-message" class="text-red-500 text-sm mt-2"></p>
+            </div>
         </div>
     </div>
 
