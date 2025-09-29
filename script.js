@@ -926,6 +926,9 @@ if (dashboardSection) { // Check if on admin.html
     });
 
     // --- AUTHENTICATION (Admin specific) ---
+    // Prevent flash: hide entire body until auth state is resolved
+    document.body.style.visibility = 'hidden';
+
     onAuthStateChanged(auth, async user => {
         if (user) {
             await ensureUserDoc(user);
@@ -946,6 +949,8 @@ if (dashboardSection) { // Check if on admin.html
             if (isAdminish()) {
                 if (loginSection) loginSection.classList.add('hidden');
                 if (dashboardSection) dashboardSection.classList.remove('hidden');
+                // Show body now that auth is confirmed
+                document.body.style.visibility = 'visible';
                 loadNewsForAdmin();
                 const newsContent = document.getElementById('content-news');
                 if (newsContent) { newsContent.classList.add('active'); newsContent.classList.remove('hidden'); }
@@ -957,6 +962,8 @@ if (dashboardSection) { // Check if on admin.html
                     if (err) err.textContent = "Akses ditolak: Anda tidak memiliki izin.";
                 }
                 if (dashboardSection) dashboardSection.classList.add('hidden');
+                // Show body for BEM users (show login with error)
+                document.body.style.visibility = 'visible';
                 // Ensure any admin-only realtime listeners are stopped
                 if (typeof cabinetUnsub === 'function') { cabinetUnsub(); cabinetUnsub = null; }
                 if (typeof logsUnsub === 'function') { logsUnsub(); logsUnsub = null; }
@@ -964,16 +971,12 @@ if (dashboardSection) { // Check if on admin.html
             }
         } else {
             currentUserRole = null;
-            // Ensure any admin-only realtime listeners are stopped on sign-out
+            // Cleanup listeners before redirect
             if (typeof cabinetUnsub === 'function') { cabinetUnsub(); cabinetUnsub = null; }
             if (typeof logsUnsub === 'function') { logsUnsub(); logsUnsub = null; }
             if (typeof invitesUnsub === 'function') { invitesUnsub(); invitesUnsub = null; }
-            if (loginSection) loginSection.classList.remove('hidden');
-            if (dashboardSection) dashboardSection.classList.add('hidden');
-            const logsTabBtn = document.getElementById('tab-logs');
-            if (logsTabBtn) logsTabBtn.classList.add('hidden');
-            const invitesTabBtn = document.getElementById('tab-invites');
-            if (invitesTabBtn) invitesTabBtn.classList.add('hidden');
+            // Immediate redirect without UI manipulation to prevent flash
+            // Body remains hidden during redirect
             window.location.href = 'index.html';
         }
     });
