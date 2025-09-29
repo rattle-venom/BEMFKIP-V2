@@ -1,6 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
 import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, deleteDoc, getDoc, updateDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, deleteDoc, getDoc, updateDoc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyAK2s6ex4tj7ycOPiEqb_bnatojCFCTMzg",
@@ -116,7 +116,56 @@ function updateTexts() {
         langToggle.textContent = currentLang === 'id' ? 'EN' : 'ID';
     }
 }
+ 
+// --- RBAC helpers (roles: BEM, ADMIN, SUPERADMIN) ---
+let currentUserRole = null;
+const ROLE = { BEM: 'BEM', ADMIN: 'ADMIN', SUPERADMIN: 'SUPERADMIN' };
 
+async function ensureUserDoc(user) {
+    // Create users/{uid} if missing with default role BEM
+    try {
+        const uref = doc(db, "users", user.uid);
+        const snap = await getDoc(uref);
+        if (!snap.exists()) {
+            await setDoc(uref, {
+                role: ROLE.BEM,
+                email: user.email || '',
+                createdAt: serverTimestamp()
+            }, { merge: true });
+        }
+    } catch (e) {
+        console.warn("ensureUserDoc error:", e);
+    }
+}
+
+async function getUserRole(uid) {
+    try {
+        const uref = doc(db, "users", uid);
+        const snap = await getDoc(uref);
+        const role = snap.exists() && snap.data().role ? snap.data().role : ROLE.BEM;
+        return role;
+    } catch (e) {
+        console.warn("getUserRole error:", e);
+        return ROLE.BEM;
+    }
+}
+
+function isAdminish() {
+    return currentUserRole === ROLE.ADMIN || currentUserRole === ROLE.SUPERADMIN;
+}
+
+function setRoleBadge(role) {
+    const badge = document.getElementById('role-badge');
+    if (!badge) return;
+    let icon = '🎓', label = 'BEM', color = 'bg-gray-200 text-gray-800';
+    if (role === ROLE.ADMIN) { icon = '🧰'; label = 'ADMIN'; color = 'bg-blue-100 text-blue-800'; }
+    if (role === ROLE.SUPERADMIN) { icon = '🛡️'; label = 'SUPERADMIN'; color = 'bg-red-100 text-red-800'; }
+    // icon-only badge; tooltip shows the label
+    badge.className = `inline-flex items-center justify-center w-8 h-8 rounded-full text-sm ${color}`;
+    badge.title = label;
+    badge.textContent = icon;
+}
+ 
 // --- Tab Switching Logic ---
 /* Pop-in helper for cards with .pop-card inside a container */
 function applyPopIn(container) {
@@ -241,22 +290,39 @@ const mobileDashboardBtn = document.getElementById('mobile-dashboard-btn');
 const mobileThemeToggle = document.getElementById('mobile-theme-toggle');
 const mobileLangToggle = document.getElementById('mobile-lang-toggle');
 
- // --- Authentication State Checker (Common) ---
+// --- Authentication State Checker (Common) ---
 if (auth) {
-    onAuthStateChanged(auth, (user) => {
+    onAuthStateChanged(auth, async (user) => {
         const addNewsBtnContainer = document.getElementById('add-news-btn-container');
         if (user) {
+            // Ensure user profile and fetch role
+            await ensureUserDoc(user);
+            currentUserRole = await getUserRole(user.uid);
+
+            // Header buttons (desktop)
             if (loginBtn) loginBtn.classList.add('hidden');
             if (logoutBtn) logoutBtn.classList.remove('hidden');
-            if (dashboardBtn) dashboardBtn.classList.remove('hidden');
+            if (dashboardBtn) {
+                if (isAdminish()) dashboardBtn.classList.remove('hidden');
+                else dashboardBtn.classList.add('hidden');
+            }
 
             // Mobile equivalents
             if (mobileLoginBtn) mobileLoginBtn.classList.add('hidden');
             if (mobileLogoutBtn) mobileLogoutBtn.classList.remove('hidden');
-            if (mobileDashboardBtn) mobileDashboardBtn.classList.remove('hidden');
+            if (mobileDashboardBtn) {
+                if (isAdminish()) mobileDashboardBtn.classList.remove('hidden');
+                else mobileDashboardBtn.classList.add('hidden');
+            }
 
-            if (addNewsBtnContainer) addNewsBtnContainer.classList.remove('hidden');
+            // Homepage "Add News" button visible only to ADMIN/SUPERADMIN
+            if (addNewsBtnContainer) {
+                if (isAdminish()) addNewsBtnContainer.classList.remove('hidden');
+                else addNewsBtnContainer.classList.add('hidden');
+            }
         } else {
+            currentUserRole = null;
+
             if (loginBtn) loginBtn.classList.remove('hidden');
             if (logoutBtn) logoutBtn.classList.add('hidden');
             if (dashboardBtn) dashboardBtn.classList.add('hidden');
@@ -405,6 +471,7 @@ if (newsContainer) { // Check if on index.html
     if (addNewsForm) {
         addNewsForm.addEventListener('submit', async (e) => {
             e.preventDefault();
+            if (!isAdminish()) { showModal("Akses ditolak", "Peran Anda tidak memiliki izin menambah berita."); return; }
             const newsData = {
                 title: document.getElementById('news-title-input').value,
                 content: document.getElementById('news-content-input').value,
@@ -625,15 +692,29 @@ if (dashboardSection) { // Check if on admin.html
     });
 
     // --- AUTHENTICATION (Admin specific) ---
-    onAuthStateChanged(auth, user => {
+    onAuthStateChanged(auth, async user => {
         if (user) {
-            if (loginSection) loginSection.classList.add('hidden');
-            if (dashboardSection) dashboardSection.classList.remove('hidden');
-            loadNewsForAdmin();
-            // Ensure default tab content is visible
-            const newsContent = document.getElementById('content-news');
-            if (newsContent) { newsContent.classList.add('active'); newsContent.classList.remove('hidden'); }
+            await ensureUserDoc(user);
+            currentUserRole = await getUserRole(user.uid);
+            setRoleBadge(currentUserRole);
+
+            if (isAdminish()) {
+                if (loginSection) loginSection.classList.add('hidden');
+                if (dashboardSection) dashboardSection.classList.remove('hidden');
+                loadNewsForAdmin();
+                const newsContent = document.getElementById('content-news');
+                if (newsContent) { newsContent.classList.add('active'); newsContent.classList.remove('hidden'); }
+            } else {
+                // No access to dashboard for BEM
+                if (loginSection) {
+                    loginSection.classList.remove('hidden');
+                    const err = document.getElementById('error-message');
+                    if (err) err.textContent = "Akses ditolak: peran Anda tidak memiliki izin.";
+                }
+                if (dashboardSection) dashboardSection.classList.add('hidden');
+            }
         } else {
+            currentUserRole = null;
             if (loginSection) loginSection.classList.remove('hidden');
             if (dashboardSection) dashboardSection.classList.add('hidden');
         }
@@ -656,6 +737,7 @@ if (dashboardSection) { // Check if on admin.html
     if (addNewsFormAdmin) {
         addNewsFormAdmin.addEventListener('submit', async (e) => {
             e.preventDefault();
+            if (!isAdminish()) { alert("Akses ditolak."); return; }
             const newsData = {
                 title: e.target.elements['news-title-input'].value, content: e.target.elements['news-content-input'].value,
                 imageUrl: e.target.elements['news-image-url-input'].value, category: e.target.elements['news-category-input'].value,
@@ -687,9 +769,11 @@ if (dashboardSection) { // Check if on admin.html
             const newsId = e.target.dataset.id;
             if (!newsId) return;
             if (e.target.classList.contains('delete-btn')) {
+                if (!isAdminish()) { alert("Akses ditolak."); return; }
                 if (confirm("Yakin ingin menghapus berita ini?")) { await deleteDoc(doc(db, "news", newsId)); }
             }
             if (e.target.classList.contains('edit-btn')) {
+                if (!isAdminish()) { alert("Akses ditolak."); return; }
                 const docSnap = await getDoc(doc(db, "news", newsId));
                 if (docSnap.exists()) {
                     const news = docSnap.data();
@@ -708,6 +792,7 @@ if (dashboardSection) { // Check if on admin.html
     if (editNewsForm) {
         editNewsForm.addEventListener('submit', async (e) => {
             e.preventDefault();
+            if (!isAdminish()) { alert("Akses ditolak."); return; }
             const newsId = e.target.elements['edit-news-id'].value;
             const updatedData = {
                 title: e.target.elements['edit-news-title'].value, content: e.target.elements['edit-news-content'].value,
@@ -723,6 +808,7 @@ if (dashboardSection) { // Check if on admin.html
     if (addPhotoForm) {
         addPhotoForm.addEventListener('submit', async (e) => {
             e.preventDefault();
+            if (!isAdminish()) { alert("Akses ditolak."); return; }
             const photoData = {
                 imageUrl: e.target.elements['photo-url-input'].value, caption: e.target.elements['photo-caption-input'].value,
                 uploadedAt: new Date()
@@ -751,6 +837,7 @@ if (dashboardSection) { // Check if on admin.html
     if (galleryListContainer) {
         galleryListContainer.addEventListener('click', async (e) => {
             if (e.target.classList.contains('delete-photo-btn')) {
+                if (!isAdminish()) { alert("Akses ditolak."); return; }
                 if (confirm("Yakin ingin menghapus foto ini?")) { await deleteDoc(doc(db, "gallery", e.target.dataset.id)); }
             }
         });
@@ -787,6 +874,7 @@ if (dashboardSection) { // Check if on admin.html
     if (cabinetForm) {
         cabinetForm.addEventListener('submit', async (e) => {
             e.preventDefault();
+            if (!isAdminish()) { if (cabinetStatus) cabinetStatus.textContent = "Akses ditolak."; return; }
             const updatedData = {};
             const inputs = cabinetForm.querySelectorAll('input[type="text"], textarea');
             inputs.forEach(input => {

@@ -78,7 +78,9 @@
     <div id="dashboard-section" class="hidden container mx-auto p-8">
         <div class="flex justify-between items-center mb-6">
             <h1 class="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
-            <div class="flex space-x-2">
+            <div class="flex items-center space-x-3">
+                <!-- Role badge; content set by script.js setRoleBadge() -->
+                <span id="role-badge" class="hidden inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-gray-200 text-gray-800" title="Role">🎓 BEM</span>
                 <a href="/index" class="bg-blue-500 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-600">View Site</a>
                 <a href="#" id="logout-btn" class="bg-red-500 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-red-600">Logout</a>
             </div>
