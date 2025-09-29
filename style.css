@@ -224,6 +224,279 @@ body {
 /* Tailwind CSS is used via CDN: https://cdn.tailwindcss.com */
 /* The classes applied directly in HTML define the styling. */
 
+/* ===== Auth Modal (CodePen yLzqPYj inspired) ===== */
+:root {
+  --auth-bg: #0c1626;
+  --auth-card-from: #1a2332;
+  --auth-card-to: #0f1419;
+  --auth-border: rgba(255,255,255,0.1);
+  --auth-text: #ffffff;
+  --auth-muted: #8b9dc3;
+  --auth-accent: #4f46e5;
+  --auth-input-border: #2d3748;
+  --auth-shadow: rgba(0, 0, 0, 0.6);
+  --auth-toggle-bg: #2d3748;
+  --auth-toggle-active: #4f46e5;
+}
+
+.auth-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: 
+    radial-gradient(ellipse at top, rgba(79, 70, 229, 0.1), transparent 50%),
+    radial-gradient(ellipse at bottom, rgba(15, 20, 25, 0.9), rgba(12, 22, 38, 0.95));
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.auth-overlay.hidden { 
+  display: none; 
+}
+
+.auth-card {
+  position: relative;
+  width: 400px;
+  max-width: 90vw;
+  color: var(--auth-text);
+  background: linear-gradient(145deg, var(--auth-card-from), var(--auth-card-to));
+  border: 1px solid var(--auth-border);
+  border-radius: 24px;
+  box-shadow:
+    0 25px 60px var(--auth-shadow),
+    inset 0 1px 0 rgba(255,255,255,0.1);
+  padding: 32px 28px;
+  overflow: hidden;
+}
+
+.auth-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+}
+
+.auth-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.1);
+  color: var(--auth-text);
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: 300;
+  transition: all 0.2s ease;
+}
+
+.auth-close:hover {
+  background: rgba(255,255,255,0.2);
+  transform: scale(1.1);
+}
+
+.auth-header {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.auth-toggle-container {
+  display: flex;
+  background: var(--auth-toggle-bg);
+  border-radius: 50px;
+  padding: 4px;
+  margin-bottom: 24px;
+  position: relative;
+}
+
+.auth-toggle {
+  flex: 1;
+  padding: 12px 24px;
+  background: transparent;
+  border: none;
+  color: var(--auth-muted);
+  font-weight: 600;
+  font-size: 14px;
+  border-radius: 50px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  z-index: 2;
+}
+
+.auth-toggle.active {
+  color: white;
+}
+
+.auth-toggle-slider {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: calc(50% - 4px);
+  height: calc(100% - 8px);
+  background: linear-gradient(135deg, var(--auth-toggle-active), #6366f1);
+  border-radius: 50px;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.4);
+}
+
+.auth-toggle-slider.signup {
+  transform: translateX(100%);
+}
+
+.auth-content { 
+  position: relative;
+}
+
+.auth-panel {
+  opacity: 1;
+  transform: translateX(0);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.auth-panel.hidden {
+  opacity: 0;
+  transform: translateX(-20px);
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  pointer-events: none;
+}
+
+.auth-form { 
+  display: flex;
+  flex-direction: column;
+  gap: 20px; 
+}
+
+.auth-field {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid var(--auth-input-border);
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 50px;
+  padding: 14px 20px;
+  transition: all 0.2s ease;
+}
+
+.auth-field:focus-within {
+  border-color: var(--auth-accent);
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+}
+
+.auth-field svg {
+  width: 20px;
+  height: 20px;
+  color: var(--auth-muted);
+  flex-shrink: 0;
+}
+
+.auth-input {
+  background: transparent;
+  border: none;
+  outline: none;
+  width: 100%;
+  color: var(--auth-text);
+  font-size: 15px;
+  font-weight: 400;
+}
+
+.auth-input::placeholder { 
+  color: var(--auth-muted);
+  opacity: 0.8;
+}
+
+.auth-submit {
+  width: 100%;
+  padding: 16px 24px;
+  border-radius: 50px;
+  border: none;
+  background: linear-gradient(135deg, var(--auth-accent), #6366f1);
+  color: white;
+  font-weight: 600;
+  font-size: 15px;
+  letter-spacing: 0.5px;
+  box-shadow: 0 8px 24px rgba(79, 70, 229, 0.4);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-top: 8px;
+}
+
+.auth-submit:hover { 
+  transform: translateY(-2px);
+  box-shadow: 0 12px 32px rgba(79, 70, 229, 0.5);
+}
+
+.auth-submit:active { 
+  transform: translateY(0);
+}
+
+.auth-error {
+  color: #f87171;
+  font-size: 13px;
+  text-align: center;
+  margin-top: 8px;
+  opacity: 0;
+  transform: translateY(-10px);
+  transition: all 0.2s ease;
+}
+
+.auth-error:not(.hidden) {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.auth-forgot {
+  text-align: center;
+  margin-top: 16px;
+}
+
+.auth-forgot a {
+  color: var(--auth-accent);
+  text-decoration: none;
+  font-size: 13px;
+  transition: opacity 0.2s ease;
+}
+
+.auth-forgot a:hover {
+  opacity: 0.8;
+}
+
+@media (max-width: 480px) {
+  .auth-card {
+    width: 95vw;
+    padding: 24px 20px;
+  }
+  
+  .auth-toggle {
+    padding: 10px 16px;
+    font-size: 13px;
+  }
+  
+  .auth-field {
+    padding: 12px 16px;
+  }
+  
+  .auth-submit {
+    padding: 14px 20px;
+  }
+}
+
 /* =========================
    Mosaic Glass Login (shared by /admin and homepage modal)
    ========================= */

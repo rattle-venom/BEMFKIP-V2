@@ -288,6 +288,9 @@ function applyPopIn(container) {
         delay += 80; // stagger
     });
 }
+ 
+// Back-compat alias for older code paths
+function animateCardsIn(container) { applyPopIn(container); }
 
 /* Tabs with animated slider and card pop-in */
 function initTabs() {
@@ -468,40 +471,56 @@ const openSignupBtn = document.getElementById('open-signup-btn');
 // Support in-modal panel toggle (CodePen-like) instead of separate signup modal
 const loginPanel = document.getElementById('login-panel');
 const signupPanel = document.getElementById('signup-panel');
-const openLoginBtn = document.getElementById('open-login-btn');
+const loginToggle = document.getElementById('login-toggle');
+const signupToggle = document.getElementById('signup-toggle');
+const authToggleSlider = document.getElementById('auth-toggle-slider');
+
+// Toggle functionality for the new CodePen-style modal
+function switchToLogin() {
+    if (loginToggle) loginToggle.classList.add('active');
+    if (signupToggle) signupToggle.classList.remove('active');
+    if (authToggleSlider) authToggleSlider.classList.remove('signup');
+    if (loginPanel) loginPanel.classList.remove('hidden');
+    if (signupPanel) signupPanel.classList.add('hidden');
+}
+
+function switchToSignup() {
+    if (signupToggle) signupToggle.classList.add('active');
+    if (loginToggle) loginToggle.classList.remove('active');
+    if (authToggleSlider) authToggleSlider.classList.add('signup');
+    if (signupPanel) signupPanel.classList.remove('hidden');
+    if (loginPanel) loginPanel.classList.add('hidden');
+}
 
 if (loginBtn) {
     loginBtn.addEventListener('click', (e) => {
         e.preventDefault();
         if (loginModal) loginModal.classList.remove('hidden');
+        if (signupModal) signupModal.classList.add('hidden'); // force-hide old separate modal if still present
+        switchToLogin();
+        console.log('[auth-ui] Open login panel in combined modal');
     });
 }
-if (closeLoginBtn) closeLoginBtn.addEventListener('click', () => { if (loginModal) loginModal.classList.add('hidden'); });
-if (openSignupBtn) {
-    openSignupBtn.addEventListener('click', (e) => {
-        e.preventDefault();
-        if (signupPanel && loginPanel) {
-            // Toggle inside the same modal
-            loginPanel.classList.add('hidden');
-            signupPanel.classList.remove('hidden');
-        } else {
-            // Fallback to separate modal if present
-            if (loginModal) loginModal.classList.add('hidden');
-            if (signupModal) signupModal.classList.remove('hidden');
-        }
+
+if (closeLoginBtn) {
+    closeLoginBtn.addEventListener('click', () => { 
+        if (loginModal) loginModal.classList.add('hidden'); 
     });
 }
-if (openLoginBtn) {
-    openLoginBtn.addEventListener('click', (e) => {
+
+if (loginToggle) {
+    loginToggle.addEventListener('click', (e) => {
         e.preventDefault();
-        if (signupPanel && loginPanel) {
-            signupPanel.classList.add('hidden');
-            loginPanel.classList.remove('hidden');
-        } else {
-            // If using separate modal, just show login modal
-            if (signupModal) signupModal.classList.add('hidden');
-            if (loginModal) loginModal.classList.remove('hidden');
-        }
+        switchToLogin();
+        console.log('[auth-ui] Switch to login panel');
+    });
+}
+
+if (signupToggle) {
+    signupToggle.addEventListener('click', (e) => {
+        e.preventDefault();
+        switchToSignup();
+        console.log('[auth-ui] Switch to signup panel');
     });
 }
 if (closeSignupBtn) closeSignupBtn.addEventListener('click', () => { if (signupModal) signupModal.classList.add('hidden'); });

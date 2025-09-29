@@ -61,16 +61,41 @@
             <div class="cell" style="background-image:url('https://source.unsplash.com/featured/?animals&sig=40');"></div>
         </div>
 
-        <!-- Centered glassmorphism login card -->
+        <!-- Centered glassmorphism login card (CodePen-style combined) -->
         <div class="login-modal-card">
             <div class="login-logo"></div>
-            <h1 class="login-title">Admin Login</h1>
-            <form id="login-form" class="login-form">
-                <input id="email-input" type="email" placeholder="Email" required class="login-input" autocomplete="username">
-                <input id="password-input" type="password" placeholder="Password" required class="login-input" autocomplete="current-password">
-                <button type="submit" class="login-button">Let me in</button>
-            </form>
-            <p id="error-message" class="login-error"></p>
+            <div class="w-full">
+                <!-- Tabs header -->
+                <div class="flex border-b border-gray-300 mb-4">
+                    <button id="open-login-btn" class="flex-1 py-2 text-center font-semibold border-b-2 border-violet-600 text-violet-700">
+                        Login
+                    </button>
+                    <button id="open-signup-btn" class="flex-1 py-2 text-center font-semibold text-gray-600 hover:text-violet-600">
+                        Sign up
+                    </button>
+                </div>
+
+                <!-- Login panel -->
+                <div id="login-panel">
+                    <form id="login-form" class="login-form">
+                        <input id="email-input" type="email" placeholder="Email" required class="login-input" autocomplete="username">
+                        <input id="password-input" type="password" placeholder="Password" required class="login-input" autocomplete="current-password">
+                        <button type="submit" class="login-button">Login</button>
+                    </form>
+                    <p id="error-message" class="login-error"></p>
+                </div>
+
+                <!-- Signup panel -->
+                <div id="signup-panel" class="hidden">
+                    <form id="signup-form" class="login-form">
+                        <input type="email" id="signup-email-input" placeholder="Email" required class="login-input" autocomplete="username">
+                        <input type="password" id="signup-password-input" placeholder="Password" required class="login-input" autocomplete="new-password">
+                        <input type="text" id="signup-security-code-input" placeholder="Security Code" required class="login-input" autocomplete="one-time-code">
+                        <button type="submit" class="login-button">Sign Up</button>
+                    </form>
+                    <p id="signup-error-message" class="login-error"></p>
+                </div>
+            </div>
         </div>
 
     </div>
