@@ -812,9 +812,15 @@ if (dashboardSection) { // Check if on admin.html
                     if (err) err.textContent = "Akses ditolak: Anda tidak memiliki izin.";
                 }
                 if (dashboardSection) dashboardSection.classList.add('hidden');
+                // Ensure any admin-only realtime listeners are stopped
+                if (typeof cabinetUnsub === 'function') { cabinetUnsub(); cabinetUnsub = null; }
+                if (typeof logsUnsub === 'function') { logsUnsub(); logsUnsub = null; }
             }
         } else {
             currentUserRole = null;
+            // Ensure any admin-only realtime listeners are stopped on sign-out
+            if (typeof cabinetUnsub === 'function') { cabinetUnsub(); cabinetUnsub = null; }
+            if (typeof logsUnsub === 'function') { logsUnsub(); logsUnsub = null; }
             if (loginSection) loginSection.classList.remove('hidden');
             if (dashboardSection) dashboardSection.classList.add('hidden');
             const logsTabBtn = document.getElementById('tab-logs');
@@ -827,12 +833,10 @@ if (dashboardSection) { // Check if on admin.html
             try {
                 await signInWithEmailAndPassword(auth, e.target.elements['email-input'].value, e.target.elements['password-input'].value);
                 await logActivity('login', {});
-                // Hide login and show dashboard instead of redirecting
-                if (loginSection) loginSection.classList.add('hidden');
-                if (dashboardSection) dashboardSection.classList.remove('hidden');
-                loadNewsForAdmin();
+                // Do not toggle UI here; onAuthStateChanged will handle visibility based on role
             } catch (error) {
-                document.getElementById('error-message').textContent = "Email atau password salah.";
+                const errEl = document.getElementById('error-message');
+                if (errEl) errEl.textContent = "Email atau password salah.";
             }
         });
     }
