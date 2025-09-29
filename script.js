@@ -118,9 +118,49 @@ function updateTexts() {
 }
 
 // --- Tab Switching Logic ---
+/* Pop-in helper for cards with .pop-card inside a container */
+function applyPopIn(container) {
+    if (!container) return;
+    const cards = container.querySelectorAll('.pop-card');
+    let delay = 0;
+    cards.forEach((el) => {
+        el.classList.remove('pop-in');
+        // force reflow to restart animation
+        void el.offsetWidth;
+        el.style.animationDelay = `${delay}ms`;
+        el.classList.add('pop-in');
+        delay += 80; // stagger
+    });
+}
+
+/* Tabs with animated slider and card pop-in */
 function initTabs() {
     const tabButtons = document.querySelectorAll('.tab-btn');
     const tabContents = document.querySelectorAll('.tab-content');
+    const slider = document.getElementById('tab-slider');
+
+    function positionSlider(targetBtn) {
+        if (!slider || !targetBtn) return;
+        const container = targetBtn.parentElement;
+        const btnRect = targetBtn.getBoundingClientRect();
+        const containerRect = container.getBoundingClientRect();
+        const left = btnRect.left - containerRect.left;
+        slider.style.width = `${btnRect.width}px`;
+        slider.style.transform = `translateX(${left}px)`;
+    }
+
+    // Initial slider position and initial pop for active content
+    const initialBtn = document.querySelector('.tab-btn.active') || tabButtons[0];
+    if (initialBtn) {
+        positionSlider(initialBtn);
+        const initialContentId = initialBtn.getAttribute('data-tab');
+        applyPopIn(document.getElementById(initialContentId));
+    }
+
+    window.addEventListener('resize', () => {
+        const activeBtn = document.querySelector('.tab-btn.active');
+        if (activeBtn) positionSlider(activeBtn);
+    });
 
     tabButtons.forEach(button => {
         button.addEventListener('click', () => {
@@ -132,7 +172,12 @@ function initTabs() {
 
             // Add active class to clicked button and corresponding content
             button.classList.add('active');
-            document.getElementById(tabId).classList.add('active');
+            const contentEl = document.getElementById(tabId);
+            if (contentEl) contentEl.classList.add('active');
+
+            // Move slider and animate cards
+            positionSlider(button);
+            applyPopIn(contentEl);
         });
     });
 }
@@ -405,7 +450,7 @@ if (newsContainer) { // Check if on index.html
         snapshot.forEach((doc) => {
             const news = doc.data();
             newsHtml += `
-                <a href="news-detail.html?id=${doc.id}" class="block rounded-xl shadow-lg hover:shadow-xl transition-shadow overflow-hidden bg-white text-gray-800">
+                <a href="news-detail.html?id=${doc.id}" class="block rounded-xl shadow-lg hover:shadow-xl transition-shadow overflow-hidden bg-white text-gray-800 pop-card">
                     <div class="relative">
                         <img class="w-full h-48 object-cover" src="${news.imageUrl}" alt="${news.title}">
                         <span class="absolute top-2 left-2 bg-violet-600 text-white px-2 py-1 text-xs font-semibold rounded-full">${news.category}</span>
@@ -423,6 +468,8 @@ if (newsContainer) { // Check if on index.html
             `;
         });
         newsContainer.innerHTML = newsHtml;
+        // trigger pop-in animation for the newly rendered news cards
+        animateCardsIn(newsContainer);
     });
 
     // Call checkAuthAndGate at the end
