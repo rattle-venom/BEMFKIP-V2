@@ -461,12 +461,8 @@ const loginModal = document.getElementById('login-modal');
 const loginFormOverlay = document.getElementById('login-form-overlay');
 const closeLoginBtn = document.getElementById('close-login-btn');
 const loginErrorMessage = document.getElementById('login-error-message');
-// Signup modal elements
-const signupModal = document.getElementById('signup-modal');
 const signupForm = document.getElementById('signup-form');
-const closeSignupBtn = document.getElementById('close-signup-btn');
 const signupErrorMessage = document.getElementById('signup-error-message');
-const openSignupBtn = document.getElementById('open-signup-btn');
 
 // Support in-modal panel toggle (CodePen-like) instead of separate signup modal
 const loginPanel = document.getElementById('login-panel');
@@ -496,7 +492,6 @@ if (loginBtn) {
     loginBtn.addEventListener('click', (e) => {
         e.preventDefault();
         if (loginModal) loginModal.classList.remove('hidden');
-        if (signupModal) signupModal.classList.add('hidden'); // force-hide old separate modal if still present
         switchToLogin();
         console.log('[auth-ui] Open login panel in combined modal');
     });
@@ -523,7 +518,7 @@ if (signupToggle) {
         console.log('[auth-ui] Switch to signup panel');
     });
 }
-if (closeSignupBtn) closeSignupBtn.addEventListener('click', () => { if (signupModal) signupModal.classList.add('hidden'); });
+
 if (signupForm) {
     signupForm.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -535,7 +530,10 @@ if (signupForm) {
             const invRef = doc(db, "invite_codes", hash);
             const invSnap = await getDoc(invRef);
             if (!invSnap.exists() || invSnap.data().used) {
-                if (signupErrorMessage) signupErrorMessage.textContent = "Security code tidak valid atau sudah digunakan.";
+                if (signupErrorMessage) {
+                    signupErrorMessage.textContent = "Invitation code tidak valid atau sudah digunakan.";
+                    signupErrorMessage.classList.remove('hidden');
+                }
                 await logActivity('signup_fail', { reason: 'invalid_or_used', codeId: hash });
                 return;
             }
@@ -544,12 +542,18 @@ if (signupForm) {
             await setDoc(doc(db, "users", cred.user.uid), { role: ROLE.BEM, email: cred.user.email || email }, { merge: true });
             await updateDoc(invRef, { used: true, usedBy: cred.user.uid, usedAt: serverTimestamp() });
             await logActivity('signup_success', { uid: cred.user.uid, email: cred.user.email || email, codeId: hash });
-            if (signupModal) signupModal.classList.add('hidden');
+            if (loginModal) loginModal.classList.add('hidden');
             signupForm.reset();
-            if (signupErrorMessage) signupErrorMessage.textContent = "";
+            if (signupErrorMessage) {
+                signupErrorMessage.classList.add('hidden');
+                signupErrorMessage.textContent = "";
+            }
         } catch (err) {
             console.error("signup error:", err);
-            if (signupErrorMessage) signupErrorMessage.textContent = "Pendaftaran gagal. Coba lagi.";
+            if (signupErrorMessage) {
+                signupErrorMessage.textContent = "Pendaftaran gagal. Coba lagi.";
+                signupErrorMessage.classList.remove('hidden');
+            }
             await logActivity('signup_fail', { reason: err && err.code ? err.code : String(err) });
         }
     });
