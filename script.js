@@ -452,7 +452,12 @@ if (logoutBtn) {
     logoutBtn.addEventListener('click', async (e) => {
         e.preventDefault();
         await logActivity('logout', {});
-        signOut(auth).catch((error) => console.error("Sign Out Error", error));
+        try {
+            await signOut(auth);
+            window.location.href = 'index.html';
+        } catch (error) {
+            console.error("Sign Out Error", error);
+        }
     });
 }
 
@@ -613,7 +618,12 @@ if (mobileLogoutBtn) {
     mobileLogoutBtn.addEventListener('click', async (e) => {
         e.preventDefault();
         await logActivity('logout', {});
-        signOut(auth).catch((error) => console.error("Sign Out Error", error));
+        try {
+            await signOut(auth);
+            window.location.href = 'index.html';
+        } catch (error) {
+            console.error("Sign Out Error", error);
+        }
         if (mobileMenu) mobileMenu.classList.add('hidden');
         if (mobileMenuButton) mobileMenuButton.setAttribute('aria-expanded', 'false');
     });
@@ -964,6 +974,7 @@ if (dashboardSection) { // Check if on admin.html
             if (logsTabBtn) logsTabBtn.classList.add('hidden');
             const invitesTabBtn = document.getElementById('tab-invites');
             if (invitesTabBtn) invitesTabBtn.classList.add('hidden');
+            window.location.href = 'index.html';
         }
     });
     if (loginForm) {
