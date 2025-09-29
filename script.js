@@ -465,6 +465,11 @@ const closeSignupBtn = document.getElementById('close-signup-btn');
 const signupErrorMessage = document.getElementById('signup-error-message');
 const openSignupBtn = document.getElementById('open-signup-btn');
 
+// Support in-modal panel toggle (CodePen-like) instead of separate signup modal
+const loginPanel = document.getElementById('login-panel');
+const signupPanel = document.getElementById('signup-panel');
+const openLoginBtn = document.getElementById('open-login-btn');
+
 if (loginBtn) {
     loginBtn.addEventListener('click', (e) => {
         e.preventDefault();
@@ -475,8 +480,28 @@ if (closeLoginBtn) closeLoginBtn.addEventListener('click', () => { if (loginModa
 if (openSignupBtn) {
     openSignupBtn.addEventListener('click', (e) => {
         e.preventDefault();
-        if (loginModal) loginModal.classList.add('hidden');
-        if (signupModal) signupModal.classList.remove('hidden');
+        if (signupPanel && loginPanel) {
+            // Toggle inside the same modal
+            loginPanel.classList.add('hidden');
+            signupPanel.classList.remove('hidden');
+        } else {
+            // Fallback to separate modal if present
+            if (loginModal) loginModal.classList.add('hidden');
+            if (signupModal) signupModal.classList.remove('hidden');
+        }
+    });
+}
+if (openLoginBtn) {
+    openLoginBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        if (signupPanel && loginPanel) {
+            signupPanel.classList.add('hidden');
+            loginPanel.classList.remove('hidden');
+        } else {
+            // If using separate modal, just show login modal
+            if (signupModal) signupModal.classList.add('hidden');
+            if (loginModal) loginModal.classList.remove('hidden');
+        }
     });
 }
 if (closeSignupBtn) closeSignupBtn.addEventListener('click', () => { if (signupModal) signupModal.classList.add('hidden'); });
