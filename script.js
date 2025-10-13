@@ -38,7 +38,7 @@ const translations = {
         "division-talent-desc": "Kami menjadi wadah bagi seluruh mahasiswa untuk menyalurkan dan mengembangkan potensi di luar bidang akademik. Kami memfasilitasi berbagai kegiatan di bidang olahraga, seni, dan hobi lainnya, mulai dari latihan rutin hingga penyelenggaraan kompetisi dan pertunjukan. Tujuan kami adalah untuk menumbuhkan semangat sportivitas, kreativitas, dan mempererat kebersamaan antar mahasiswa melalui minat yang mereka miliki.",
         "division-religious-title": "Keagamaan",
         "division-religious-desc": "Kami berfokus pada pembinaan dan peningkatan kualitas spiritual serta moral mahasiswa. Kami secara rutin menyelenggarakan berbagai kegiatan keagamaan, seperti perayaan hari besar, kajian kitab suci, dan acara-acara rohani lainnya. Melalui program kami, kami berupaya menciptakan lingkungan kampus yang harmonis, toleran, dan religius bagi seluruh civitas akademika.",
-        "division-humanity-title": "KEHUMANITASAN",
+        "division-humanity-title": "Kehumanitasan",
         "division-humanity-desc": "Kami bergerak di garda terdepan dalam aksi kepedulian sosial dan pengabdian kepada masyarakat. Kami menginisiasi dan mengorganisir berbagai program kemanusiaan, mulai dari bakti sosial di desa binaan, penggalangan dana untuk korban bencana, hingga kampanye isu sosial. Tujuan utama kami adalah menumbuhkan kepekaan dan jiwa sosial mahasiswa agar dapat memberikan kontribusi nyata bagi masyarakat luas.",
         "news-title": "Berita & Artikel Terbaru",
         "add-news": "Tambah Berita Baru"
