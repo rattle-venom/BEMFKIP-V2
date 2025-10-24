@@ -254,6 +254,25 @@ function describeLog(log) {
         case 'news_delete': return `This user deleted news "${p.title || p.docId || ''}"`;
         case 'gallery_add': return `This user added photo "${p.caption || p.docId || ''}"`;
         case 'gallery_delete': return `This user deleted photo "${p.caption || p.docId || ''}"`;
+        case 'proker_add': return `This user added program kerja "${p.title || p.docId || ''}"`;
+        case 'proker_edit': {
+            const labelMap = {
+                division: 'Division',
+                title: 'Title',
+                description: 'Description',
+                date: 'Date',
+                status: 'Status',
+                imageUrl: 'Image URL'
+            };
+            const fieldsAll = Array.isArray(p.fields) && p.fields.length
+                ? p.fields
+                : (Array.isArray(p.changes) ? p.changes.map(c => c.key) : []);
+            const fields = fieldsAll.filter(k => k !== 'createdAt' && k !== 'updatedAt');
+            const parts = fields.map(k => labelMap[k] || k);
+            if (!parts.length) return 'This user edited a program kerja item';
+            return `This user changed ${parts.join(', ')} of program kerja`;
+        }
+        case 'proker_delete': return `This user deleted program kerja "${p.title || p.docId || ''}"`;
         case 'cabinet_update':
             if (Array.isArray(p.changes) && p.changes.length) {
                 const parts = p.changes.slice(0, 3).map(c => `${c.key} from "${c.before}" to "${c.after}"`);
@@ -656,6 +675,88 @@ if (galleryContainer) {
     });
 }
 
+// --- Division pages specific logic (divisi-psdm.html, etc.) ---
+const prokerContainer = document.getElementById('proker-container');
+const prokerDetailModal = document.getElementById('proker-detail-modal');
+const closeProkerDetailBtn = document.getElementById('close-proker-detail-btn');
+
+if (prokerContainer) {
+    // Determine division from page title or URL
+    const pageTitle = document.title;
+    let divisionFilter = '';
+    if (pageTitle.includes('PSDM')) divisionFilter = 'psdm';
+    else if (pageTitle.includes('HUMAS')) divisionFilter = 'humas';
+    else if (pageTitle.includes('KOMINFO')) divisionFilter = 'kominfo';
+    else if (pageTitle.includes('BAKAT')) divisionFilter = 'bakat';
+    else if (pageTitle.includes('AGAMA')) divisionFilter = 'agama';
+    else if (pageTitle.includes('HUMANIS')) divisionFilter = 'humanis';
+
+    const prokerQuery = query(collection(db, "proker"), orderBy("createdAt", "desc"));
+    onSnapshot(prokerQuery, (snapshot) => {
+        if (snapshot.empty) {
+            prokerContainer.innerHTML = '<p class="col-span-full text-gray-500">Belum ada program kerja untuk divisi ini.</p>';
+            return;
+        }
+        let prokerHtml = '';
+        snapshot.forEach(doc => {
+            const proker = doc.data();
+            if (divisionFilter && proker.division !== divisionFilter) return; // Filter by division
+            const statusClass = proker.status === 'Completed' ? 'bg-green-100 text-green-800' : proker.status === 'Ongoing' ? 'bg-blue-100 text-blue-800' : 'bg-yellow-100 text-yellow-800';
+            prokerHtml += `
+                <div class="bg-white rounded-lg shadow-md overflow-hidden pop-card">
+                    ${proker.imageUrl ? `<img src="${proker.imageUrl}" alt="${proker.title}" class="w-full h-48 object-cover">` : ''}
+                    <div class="p-6">
+                        <div class="flex justify-between items-start mb-2">
+                            <h3 class="font-bold text-xl mb-2">${proker.title}</h3>
+                            <span class="px-2 py-1 text-xs rounded-full ${statusClass}">${proker.status}</span>
+                        </div>
+                        <p class="text-gray-600 mb-4">${proker.description.substring(0, 150)}...</p>
+                        <p class="text-sm text-gray-500 mb-4">${proker.date}</p>
+                        <button data-id="${doc.id}" class="view-proker-btn text-violet-600 font-semibold hover:text-violet-800">Lihat Detail →</button>
+                    </div>
+                </div>
+            `;
+        });
+        prokerContainer.innerHTML = prokerHtml;
+        // Apply pop-in animation
+        applyPopIn(prokerContainer);
+    });
+}
+
+if (prokerDetailModal && closeProkerDetailBtn) {
+    closeProkerDetailBtn.addEventListener('click', () => {
+        prokerDetailModal.classList.add('hidden');
+    });
+
+    // Handle view detail button clicks
+    document.addEventListener('click', async (e) => {
+        if (e.target.classList.contains('view-proker-btn')) {
+            const prokerId = e.target.dataset.id;
+            if (!prokerId) return;
+            const docSnap = await getDoc(doc(db, "proker", prokerId));
+            if (docSnap.exists()) {
+                const proker = docSnap.data();
+                const statusClass = proker.status === 'Completed' ? 'bg-green-100 text-green-800' : proker.status === 'Ongoing' ? 'bg-blue-100 text-blue-800' : 'bg-yellow-100 text-yellow-800';
+                document.getElementById('proker-detail-title').textContent = proker.title;
+                document.getElementById('proker-detail-description').textContent = proker.description;
+                document.getElementById('proker-detail-date').textContent = proker.date;
+                document.getElementById('proker-detail-status').textContent = proker.status;
+                document.getElementById('proker-detail-status').className = `px-2 py-1 rounded-full text-xs font-semibold ${statusClass}`;
+                const imageDiv = document.getElementById('proker-detail-image');
+                const img = document.getElementById('proker-detail-img');
+                if (proker.imageUrl) {
+                    img.src = proker.imageUrl;
+                    img.alt = proker.title;
+                    imageDiv.classList.remove('hidden');
+                } else {
+                    imageDiv.classList.add('hidden');
+                }
+                prokerDetailModal.classList.remove('hidden');
+            }
+        }
+    });
+}
+
 // --- /index.html specific logic ---
 const messageModal = document.getElementById('message-modal');
 const modalTitle = document.getElementById('modal-title');
@@ -898,6 +999,9 @@ if (dashboardSection) { // Check if on admin.html
     // Invites real-time listener unsubscribe holder
     let invitesUnsub = null;
 
+    // Proker real-time listener unsubscribe holder
+    let prokerUnsub = null;
+
     // --- TAB SWITCHING ---
     tabs.forEach(tab => {
         tab.addEventListener('click', () => {
@@ -918,10 +1022,12 @@ if (dashboardSection) { // Check if on admin.html
             if (typeof cabinetUnsub === 'function') { cabinetUnsub(); cabinetUnsub = null; }
             if (typeof logsUnsub === 'function') { logsUnsub(); logsUnsub = null; }
             if (typeof invitesUnsub === 'function') { invitesUnsub(); invitesUnsub = null; }
+            if (typeof prokerUnsub === 'function') { prokerUnsub(); prokerUnsub = null; }
             if (tab.id === 'tab-gallery') loadGalleryForAdmin();
             if (tab.id === 'tab-cabinet') startCabinetListener();
             if (tab.id === 'tab-invites') startInvitesListener();
             if (tab.id === 'tab-logs') startLogsListener();
+            if (tab.id === 'tab-proker') startProkerListener();
         });
     });
 
@@ -946,28 +1052,52 @@ if (dashboardSection) { // Check if on admin.html
                 else invitesTabBtn.classList.add('hidden');
             }
 
-            if (isAdminish()) {
+            if (isAdminish() || currentUserRole === ROLE.BEM) {
                 if (loginSection) loginSection.classList.add('hidden');
                 if (dashboardSection) dashboardSection.classList.remove('hidden');
                 // Show body now that auth is confirmed
                 document.body.style.visibility = 'visible';
-                loadNewsForAdmin();
-                const newsContent = document.getElementById('content-news');
-                if (newsContent) { newsContent.classList.add('active'); newsContent.classList.remove('hidden'); }
+                // Hide tabs based on role
+                const newsTab = document.getElementById('tab-news');
+                const galleryTab = document.getElementById('tab-gallery');
+                const cabinetTab = document.getElementById('tab-cabinet');
+                const prokerTab = document.getElementById('tab-proker');
+                const invitesTab = document.getElementById('tab-invites');
+                const logsTab = document.getElementById('tab-logs');
+                if (currentUserRole === ROLE.BEM) {
+                    // BEM only sees Proker tab
+                    if (newsTab) newsTab.classList.add('hidden');
+                    if (galleryTab) galleryTab.classList.add('hidden');
+                    if (cabinetTab) cabinetTab.classList.add('hidden');
+                    if (prokerTab) prokerTab.classList.remove('hidden');
+                    if (invitesTab) invitesTab.classList.add('hidden');
+                    if (logsTab) logsTab.classList.add('hidden');
+                    // Activate Proker tab
+                    loadProkerForAdmin();
+                    const prokerContent = document.getElementById('content-proker');
+                    if (prokerContent) { prokerContent.classList.add('active'); prokerContent.classList.remove('hidden'); }
+                } else {
+                    // ADMIN/SUPERADMIN see all except Proker
+                    if (prokerTab) prokerTab.classList.add('hidden');
+                    loadNewsForAdmin();
+                    const newsContent = document.getElementById('content-news');
+                    if (newsContent) { newsContent.classList.add('active'); newsContent.classList.remove('hidden'); }
+                }
             } else {
-                // No access to dashboard for BEM
+                // No access
                 if (loginSection) {
                     loginSection.classList.remove('hidden');
                     const err = document.getElementById('error-message');
                     if (err) err.textContent = "Akses ditolak: Anda tidak memiliki izin.";
                 }
                 if (dashboardSection) dashboardSection.classList.add('hidden');
-                // Show body for BEM users (show login with error)
+                // Show body
                 document.body.style.visibility = 'visible';
-                // Ensure any admin-only realtime listeners are stopped
+                // Ensure any realtime listeners are stopped
                 if (typeof cabinetUnsub === 'function') { cabinetUnsub(); cabinetUnsub = null; }
                 if (typeof logsUnsub === 'function') { logsUnsub(); logsUnsub = null; }
                 if (typeof invitesUnsub === 'function') { invitesUnsub(); invitesUnsub = null; }
+                if (typeof prokerUnsub === 'function') { prokerUnsub(); prokerUnsub = null; }
             }
         } else {
             currentUserRole = null;
@@ -975,6 +1105,7 @@ if (dashboardSection) { // Check if on admin.html
             if (typeof cabinetUnsub === 'function') { cabinetUnsub(); cabinetUnsub = null; }
             if (typeof logsUnsub === 'function') { logsUnsub(); logsUnsub = null; }
             if (typeof invitesUnsub === 'function') { invitesUnsub(); invitesUnsub = null; }
+            if (typeof prokerUnsub === 'function') { prokerUnsub(); prokerUnsub = null; }
             // Immediate redirect without UI manipulation to prevent flash
             // Body remains hidden during redirect
             window.location.href = 'index.html';
@@ -1275,6 +1406,133 @@ if (dashboardSection) { // Check if on admin.html
             if (logsStatus) logsStatus.textContent = "Gagal memuat log.";
         }
     }
+
+    // --- PROKER MANAGEMENT ---
+    const addProkerForm = document.getElementById('add-proker-form');
+    const addProkerStatus = document.getElementById('add-proker-status');
+    const prokerListContainer = document.getElementById('proker-list-container');
+    const editProkerModal = document.getElementById('edit-proker-modal');
+    const editProkerForm = document.getElementById('edit-proker-form');
+    const cancelEditProkerBtn = document.getElementById('cancel-edit-proker-btn');
+
+    if (addProkerForm) {
+        addProkerForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (currentUserRole !== ROLE.BEM) { if (addProkerStatus) addProkerStatus.textContent = "Akses ditolak."; return; }
+            const prokerData = {
+                division: e.target.elements['proker-division-input'].value,
+                title: e.target.elements['proker-title-input'].value,
+                description: e.target.elements['proker-description-input'].value,
+                date: e.target.elements['proker-date-input'].value,
+                status: e.target.elements['proker-status-input'].value,
+                imageUrl: e.target.elements['proker-image-input'].value || '',
+                createdAt: serverTimestamp()
+            };
+            try {
+                const docRef = await addDoc(collection(db, "proker"), prokerData);
+                await logActivity('proker_add', { docId: docRef.id, title: prokerData.title });
+                if (addProkerStatus) addProkerStatus.textContent = "Program Kerja berhasil ditambahkan!";
+                addProkerForm.reset();
+                setTimeout(() => { if (addProkerStatus) addProkerStatus.textContent = ''; }, 3000);
+            } catch (err) {
+                console.error("Error adding proker: ", err);
+                if (addProkerStatus) addProkerStatus.textContent = "Gagal menambahkan Program Kerja.";
+            }
+        });
+    }
+
+    function loadProkerForAdmin() {
+        if (!prokerListContainer) return;
+        const prokerQuery = query(collection(db, "proker"), orderBy("createdAt", "desc"));
+        prokerUnsub = onSnapshot(prokerQuery, (snapshot) => {
+            let prokerHtml = '';
+            if (snapshot.empty) {
+                prokerListContainer.innerHTML = '<p>Belum ada Program Kerja.</p>';
+                return;
+            }
+            snapshot.forEach(doc => {
+                const proker = doc.data();
+                const statusClass = proker.status === 'Completed' ? 'bg-green-100 text-green-800' : proker.status === 'Ongoing' ? 'bg-blue-100 text-blue-800' : 'bg-yellow-100 text-yellow-800';
+                prokerHtml += `
+                    <div class="bg-white p-4 rounded-lg shadow-md border">
+                        <div class="flex justify-between items-start mb-2">
+                            <h4 class="font-semibold text-lg">${proker.title}</h4>
+                            <span class="px-2 py-1 text-xs rounded-full ${statusClass}">${proker.status}</span>
+                        </div>
+                        <p class="text-sm text-gray-600 mb-2">${proker.description.substring(0, 100)}...</p>
+                        <p class="text-xs text-gray-500 mb-2">Divisi: ${proker.division} | ${proker.date}</p>
+                        <div class="flex space-x-2">
+                            <button data-id="${doc.id}" class="edit-proker-btn text-sm bg-blue-500 text-white px-3 py-1 rounded-md">Edit</button>
+                            <button data-id="${doc.id}" class="delete-proker-btn text-sm bg-red-500 text-white px-3 py-1 rounded-md">Delete</button>
+                        </div>
+                    </div>
+                `;
+            });
+            prokerListContainer.innerHTML = prokerHtml;
+        });
+    }
+
+    function startProkerListener() {
+        loadProkerForAdmin();
+    }
+
+    if (prokerListContainer) {
+        prokerListContainer.addEventListener('click', async (e) => {
+            const prokerId = e.target.dataset.id;
+            if (!prokerId) return;
+            if (e.target.classList.contains('delete-proker-btn')) {
+                if (currentUserRole !== ROLE.BEM) { alert("Akses ditolak."); return; }
+                if (confirm("Yakin ingin menghapus Program Kerja ini?")) {
+                    const ref = doc(db, "proker", prokerId);
+                    const snap = await getDoc(ref);
+                    const title = snap.exists() ? (snap.data().title || '') : '';
+                    await deleteDoc(ref);
+                    await logActivity('proker_delete', { docId: prokerId, title });
+                }
+            }
+            if (e.target.classList.contains('edit-proker-btn')) {
+                if (currentUserRole !== ROLE.BEM) { alert("Akses ditolak."); return; }
+                const docSnap = await getDoc(doc(db, "proker", prokerId));
+                if (docSnap.exists()) {
+                    const proker = docSnap.data();
+                    if (editProkerForm) {
+                        editProkerForm.elements['edit-proker-id'].value = prokerId;
+                        editProkerForm.elements['edit-proker-division'].value = proker.division;
+                        editProkerForm.elements['edit-proker-title'].value = proker.title;
+                        editProkerForm.elements['edit-proker-description'].value = proker.description;
+                        editProkerForm.elements['edit-proker-date'].value = proker.date;
+                        editProkerForm.elements['edit-proker-status'].value = proker.status;
+                        editProkerForm.elements['edit-proker-image'].value = proker.imageUrl || '';
+                        if (editProkerModal) editProkerModal.classList.remove('hidden');
+                    }
+                }
+            }
+        });
+    }
+
+    if (editProkerForm) {
+        editProkerForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (currentUserRole !== ROLE.BEM) { alert("Akses ditolak."); return; }
+            const prokerId = e.target.elements['edit-proker-id'].value;
+            const updatedData = {
+                division: e.target.elements['edit-proker-division'].value,
+                title: e.target.elements['edit-proker-title'].value,
+                description: e.target.elements['edit-proker-description'].value,
+                date: e.target.elements['edit-proker-date'].value,
+                status: e.target.elements['edit-proker-status'].value,
+                imageUrl: e.target.elements['edit-proker-image'].value || ''
+            };
+            const prevSnap = await getDoc(doc(db, "proker", prokerId));
+            const prevData = prevSnap.exists() ? prevSnap.data() : {};
+            const changes = diffObjects(prevData, updatedData);
+            await updateDoc(doc(db, "proker", prokerId), updatedData);
+            await logActivity('proker_edit', { docId: prokerId, title: prevData.title || updatedData.title || '', changes });
+            if (editProkerModal) editProkerModal.classList.add('hidden');
+        });
+    }
+
+    if (cancelEditProkerBtn) cancelEditProkerBtn.addEventListener('click', () => { if (editProkerModal) editProkerModal.classList.add('hidden'); });
 
     // --- CABINET MANAGEMENT ---
     const cabinetDocRef = doc(db, "cabinet", "current_cabinet");
