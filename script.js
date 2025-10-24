@@ -1061,6 +1061,7 @@ if (dashboardSection) { // Check if on admin.html
         if (user) {
             await ensureUserDoc(user);
             currentUserRole = await getUserRole(user.uid);
+            currentUserDivision = await getUserDivision(user.uid);
             setRoleBadge(currentUserRole);
             // Show/hide SUPERADMIN tabs
             const logsTabBtn = document.getElementById('tab-logs');
@@ -1095,7 +1096,7 @@ if (dashboardSection) { // Check if on admin.html
                     if (invitesTab) invitesTab.classList.add('hidden');
                     if (logsTab) logsTab.classList.add('hidden');
                     // Activate Proker tab
-                    loadProkerForAdmin();
+                    startProkerListener();
                     const prokerContent = document.getElementById('content-proker');
                     if (prokerContent) { prokerContent.classList.add('active'); prokerContent.classList.remove('hidden'); }
                 } else {
@@ -1440,18 +1441,18 @@ if (dashboardSection) { // Check if on admin.html
     if (addProkerForm) {
         addProkerForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            if (currentUserRole === ROLE.BEM) {
-                e.target.elements['proker-division-input'].value = currentUserDivision;
-            }
-            if (currentUserRole !== ROLE.BEM) { if (addProkerStatus) addProkerStatus.textContent = "Akses ditolak."; return; }
+            if (currentUserRole !== ROLE.BEM && !isAdminish()) { if (addProkerStatus) addProkerStatus.textContent = "Akses ditolak."; return; }
+            const user = auth.currentUser;
+            if (!user) return;
             const prokerData = {
-                division: e.target.elements['proker-division-input'].value,
+                division: currentUserRole === ROLE.BEM ? currentUserDivision : e.target.elements['proker-division-input'].value,
                 title: e.target.elements['proker-title-input'].value,
                 description: e.target.elements['proker-description-input'].value,
                 date: e.target.elements['proker-date-input'].value,
                 status: e.target.elements['proker-status-input'].value,
                 imageUrl: e.target.elements['proker-image-input'].value || '',
                 penanggungJawab: e.target.elements['proker-penanggung-jawab-input'].value,
+                createdBy: user.uid,
                 createdAt: serverTimestamp()
             };
             try {
@@ -1513,7 +1514,7 @@ if (dashboardSection) { // Check if on admin.html
             const prokerId = e.target.dataset.id;
             if (!prokerId) return;
             if (e.target.classList.contains('delete-proker-btn')) {
-                if (currentUserRole !== ROLE.BEM) { alert("Akses ditolak."); return; }
+                if (currentUserRole !== ROLE.BEM && !isAdminish()) { alert("Akses ditolak."); return; }
                 if (confirm("Yakin ingin menghapus Program Kerja ini?")) {
                     const ref = doc(db, "program_kerja", prokerId);
                     const snap = await getDoc(ref);
@@ -1523,7 +1524,7 @@ if (dashboardSection) { // Check if on admin.html
                 }
             }
             if (e.target.classList.contains('edit-proker-btn')) {
-                if (currentUserRole !== ROLE.BEM) { alert("Akses ditolak."); return; }
+                if (currentUserRole !== ROLE.BEM && !isAdminish()) { alert("Akses ditolak."); return; }
                 const docSnap = await getDoc(doc(db, "program_kerja", prokerId));
                 if (docSnap.exists()) {
                     const proker = docSnap.data();
@@ -1546,10 +1547,10 @@ if (dashboardSection) { // Check if on admin.html
     if (editProkerForm) {
         editProkerForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            if (currentUserRole !== ROLE.BEM) { alert("Akses ditolak."); return; }
+            if (currentUserRole !== ROLE.BEM && !isAdminish()) { alert("Akses ditolak."); return; }
             const prokerId = e.target.elements['edit-proker-id'].value;
             const updatedData = {
-                division: e.target.elements['edit-proker-division'].value,
+                division: currentUserRole === ROLE.BEM ? currentUserDivision : e.target.elements['edit-proker-division'].value,
                 title: e.target.elements['edit-proker-title'].value,
                 description: e.target.elements['edit-proker-description'].value,
                 date: e.target.elements['edit-proker-date'].value,
