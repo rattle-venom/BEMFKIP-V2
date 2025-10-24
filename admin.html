@@ -90,6 +90,15 @@
                     <form id="signup-form" class="login-form">
                         <input type="email" id="signup-email-input" placeholder="Email" required class="login-input" autocomplete="username">
                         <input type="password" id="signup-password-input" placeholder="Password" required class="login-input" autocomplete="new-password">
+                        <select id="signup-division-input" required class="login-input">
+                            <option value="">Pilih Divisi</option>
+                            <option value="psdm">Bidang Umum</option>
+                            <option value="humas">Media dan Komunikasi</option>
+                            <option value="kominfo">Keilmuan dan Kastrat</option>
+                            <option value="bakat">Bakat dan Minat</option>
+                            <option value="agama">Keagamaan</option>
+                            <option value="humanis">Kehumanitasan</option>
+                        </select>
                         <input type="text" id="signup-security-code-input" placeholder="Security Code" required class="login-input" autocomplete="one-time-code">
                         <button type="submit" class="login-button">Sign Up</button>
                     </form>
@@ -175,7 +184,7 @@
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         <div class="p-4 border rounded-lg space-y-2">
-                            <h3 class="font-semibold text-lg">Media & Komunikasi</h3>
+                            <h3 class="font-semibold text-lg">Media dan Komunikasi</h3>
                             <div><label for="medkom_ketua" class="text-sm">Ketua</label><input type="text" id="medkom_ketua" class="mt-1 w-full p-2 border border-gray-300 rounded-md"></div>
                             <div><label for="medkom_sekretaris" class="text-sm">Sekretaris</label><input type="text" id="medkom_sekretaris" class="mt-1 w-full p-2 border border-gray-300 rounded-md"></div>
                             <div><label for="medkom_anggota" class="text-sm">Anggota</label><textarea id="medkom_anggota" class="mt-1 w-full p-2 border border-gray-300 rounded-md" rows="2"></textarea></div>
@@ -237,16 +246,16 @@
                     <div>
                         <h3 class="text-xl font-semibold mb-4">Tambah Program Kerja Baru</h3>
                         <form id="add-proker-form" class="space-y-4">
-                            <div>
+                            <div class="bem-hidden">
                                 <label for="proker-division-input" class="block text-sm font-medium text-gray-700">Divisi</label>
                                 <select id="proker-division-input" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm">
                                     <option value="">Pilih Divisi</option>
-                                    <option value="psdm">PSDM (Umum)</option>
-                                    <option value="humas">HUMAS (Media & Komunikasi)</option>
-                                    <option value="kominfo">KOMINFO (Keilmuan dan Kastrat)</option>
-                                    <option value="bakat">BAKAT (Bakat dan Minat)</option>
-                                    <option value="agama">AGAMA (Keagamaan)</option>
-                                    <option value="humanis">HUMANIS (Kehumanitasan)</option>
+                                    <option value="psdm">Bidang Umum</option>
+                                    <option value="humas">Media dan Komunikasi</option>
+                                    <option value="kominfo">Keilmuan dan Kastrat</option>
+                                    <option value="bakat">Bakat dan Minat</option>
+                                    <option value="agama">Keagamaan</option>
+                                    <option value="humanis">Kehumanitasan</option>
                                 </select>
                             </div>
                             <div>
@@ -272,6 +281,10 @@
                             <div>
                                 <label for="proker-image-input" class="block text-sm font-medium text-gray-700">URL Gambar (Opsional)</label>
                                 <input type="url" id="proker-image-input" placeholder="https://contoh.com/gambar.jpg" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm">
+                            </div>
+                            <div>
+                                <label for="proker-penanggung-jawab-input" class="block text-sm font-medium text-gray-700">Penanggung Jawab</label>
+                                <input type="text" id="proker-penanggung-jawab-input" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm">
                             </div>
                             <div>
                                 <button type="submit" class="w-full px-4 py-2 font-semibold text-white bg-violet-600 rounded-md hover:bg-violet-700">Simpan Program</button>
@@ -351,15 +364,15 @@
             <form id="edit-proker-form">
                 <input type="hidden" id="edit-proker-id">
                 <div class="space-y-4">
-                    <div>
+                    <div class="bem-hidden">
                         <label for="edit-proker-division" class="block text-sm font-medium text-gray-700">Divisi</label>
                         <select id="edit-proker-division" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm">
-                            <option value="psdm">PSDM (Umum)</option>
-                            <option value="humas">HUMAS (Media & Komunikasi)</option>
-                            <option value="kominfo">KOMINFO (Keilmuan dan Kastrat)</option>
-                            <option value="bakat">BAKAT (Bakat dan Minat)</option>
-                            <option value="agama">AGAMA (Keagamaan)</option>
-                            <option value="humanis">HUMANIS (Kehumanitasan)</option>
+                            <option value="psdm">Bidang Umum</option>
+                            <option value="humas">Media dan Komunikasi</option>
+                            <option value="kominfo">Keilmuan dan Kastrat</option>
+                            <option value="bakat">Bakat dan Minat</option>
+                            <option value="agama">Keagamaan</option>
+                            <option value="humanis">Kehumanitasan</option>
                         </select>
                     </div>
                     <div>
@@ -385,6 +398,10 @@
                     <div>
                         <label for="edit-proker-image" class="block text-sm font-medium text-gray-700">URL Gambar (Opsional)</label>
                         <input type="url" id="edit-proker-image" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm">
+                    </div>
+                    <div>
+                        <label for="edit-proker-penanggung-jawab" class="block text-sm font-medium text-gray-700">Penanggung Jawab</label>
+                        <input type="text" id="edit-proker-penanggung-jawab" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm">
                     </div>
                 </div>
                 <div class="items-center px-4 py-3 mt-4 text-right bg-gray-50 -mx-5 -mb-5 rounded-b-md">

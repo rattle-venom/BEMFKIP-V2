@@ -1,31 +1,19 @@
-# Login/Signup Modal Update - CodePen Style
+# TODO: Implement Kelola Program Kerja with Role-Based Access
 
-## Tasks to Complete:
+## Completed
+- [x] Create TODO.md
+- [x] Update admin.html: Add division select to signup form
+- [x] Update admin.html: Add penanggungJawab to add-proker-form and edit-proker-form
+- [x] Update admin.html: Add logic to hide division select for BEM
+- [x] Update script.js: Add division to user doc in signup and ensureUserDoc
+- [x] Update script.js: Filter program_kerja queries for BEM by user.division
+- [x] Update script.js: Update form handling to include penanggungJawab
+- [x] Update script.js: Update admin list display to show penanggungJawab
+- [x] Update script.js: Update public modal to show penanggungJawab
+- [x] Update script.js: Update tab visibility for BEM (hide other tabs)
 
-- [x] Create TODO file
-- [x] Update CSS styles for CodePen-inspired modal design
-- [x] Update HTML structure for toggle functionality
-- [x] Update JavaScript for smooth toggle animations
-- [x] Test modal functionality in browser
-- [x] Verify Firebase authentication works
-- [x] Final testing and completion
+## Pending
+- [x] Update script.js: Change collection from "proker" to "program_kerja"
 
-## Progress:
-- Started implementation of CodePen-style login/signup modal
-- Updated CSS with modern dark theme and toggle switch styling
-- Updated HTML structure with new toggle container and improved form layout
-- Updated JavaScript with toggle functionality and smooth animations
-- Successfully tested all modal functionality including toggle animations
-- Verified Firebase authentication integration works correctly
-- All features working perfectly!
-
-## ✅ COMPLETED SUCCESSFULLY!
-
-The login/signup modal has been successfully updated to match the CodePen design with:
-- Beautiful dark theme with gradient backgrounds
-- Smooth toggle switch between Login/Signup
-- Modern input fields with icons and focus states
-- Proper form validation and error handling
-- Full Firebase authentication integration
-- Responsive design for mobile devices
-- Professional animations and transitions
+## Followup
+- [ ] Test role-based access and proker management

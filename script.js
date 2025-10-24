@@ -1,6 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
 import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, deleteDoc, getDoc, updateDoc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, where, doc, deleteDoc, getDoc, updateDoc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyAK2s6ex4tj7ycOPiEqb_bnatojCFCTMzg",
@@ -119,6 +119,7 @@ function updateTexts() {
  
 // --- RBAC helpers (roles: BEM, ADMIN, SUPERADMIN) ---
 let currentUserRole = null;
+let currentUserDivision = null;
 const ROLE = { BEM: 'BEM', ADMIN: 'ADMIN', SUPERADMIN: 'SUPERADMIN' };
 
 async function ensureUserDoc(user) {
@@ -130,6 +131,7 @@ async function ensureUserDoc(user) {
             await setDoc(uref, {
                 role: ROLE.BEM,
                 email: user.email || '',
+                division: 'psdm',
                 createdAt: serverTimestamp()
             }, { merge: true });
         }
@@ -147,6 +149,17 @@ async function getUserRole(uid) {
     } catch (e) {
         console.warn("getUserRole error:", e);
         return ROLE.BEM;
+    }
+}
+
+async function getUserDivision(uid) {
+    try {
+        const uref = doc(db, "users", uid);
+        const snap = await getDoc(uref);
+        return snap.exists() ? snap.data().division || null : null;
+    } catch (e) {
+        console.warn("getUserDivision error:", e);
+        return null;
     }
 }
 
@@ -425,14 +438,15 @@ if (auth) {
         const addNewsBtnContainer = document.getElementById('add-news-btn-container');
         if (user) {
             // Ensure user profile and fetch role
-            await ensureUserDoc(user);
-            currentUserRole = await getUserRole(user.uid);
+        await ensureUserDoc(user);
+        currentUserRole = await getUserRole(user.uid);
+        currentUserDivision = await getUserDivision(user.uid);
 
             // Header buttons (desktop)
             if (loginBtn) loginBtn.classList.add('hidden');
             if (logoutBtn) logoutBtn.classList.remove('hidden');
             if (dashboardBtn) {
-                if (isAdminish()) dashboardBtn.classList.remove('hidden');
+                if (isAdminish() || currentUserRole === ROLE.BEM) dashboardBtn.classList.remove('hidden');
                 else dashboardBtn.classList.add('hidden');
             }
 
@@ -440,7 +454,7 @@ if (auth) {
             if (mobileLoginBtn) mobileLoginBtn.classList.add('hidden');
             if (mobileLogoutBtn) mobileLogoutBtn.classList.remove('hidden');
             if (mobileDashboardBtn) {
-                if (isAdminish()) mobileDashboardBtn.classList.remove('hidden');
+                if (isAdminish() || currentUserRole === ROLE.BEM) mobileDashboardBtn.classList.remove('hidden');
                 else mobileDashboardBtn.classList.add('hidden');
             }
 
@@ -563,7 +577,7 @@ if (signupForm) {
             }
             const cred = await createUserWithEmailAndPassword(auth, email, password);
             await ensureUserDoc(cred.user);
-            await setDoc(doc(db, "users", cred.user.uid), { role: ROLE.BEM, email: cred.user.email || email }, { merge: true });
+            await setDoc(doc(db, "users", cred.user.uid), { role: ROLE.BEM, email: cred.user.email || email, division: 'psdm' }, { merge: true });
             await updateDoc(invRef, { used: true, usedBy: cred.user.uid, usedAt: serverTimestamp() });
             await logActivity('signup_success', { uid: cred.user.uid, email: cred.user.email || email, codeId: hash });
             if (loginModal) loginModal.classList.add('hidden');
@@ -691,7 +705,7 @@ if (prokerContainer) {
     else if (pageTitle.includes('AGAMA')) divisionFilter = 'agama';
     else if (pageTitle.includes('HUMANIS')) divisionFilter = 'humanis';
 
-    const prokerQuery = query(collection(db, "proker"), orderBy("createdAt", "desc"));
+    const prokerQuery = query(collection(db, "program_kerja"), orderBy("createdAt", "desc"));
     onSnapshot(prokerQuery, (snapshot) => {
         if (snapshot.empty) {
             prokerContainer.innerHTML = '<p class="col-span-full text-gray-500">Belum ada program kerja untuk divisi ini.</p>';
@@ -733,7 +747,7 @@ if (prokerDetailModal && closeProkerDetailBtn) {
         if (e.target.classList.contains('view-proker-btn')) {
             const prokerId = e.target.dataset.id;
             if (!prokerId) return;
-            const docSnap = await getDoc(doc(db, "proker", prokerId));
+            const docSnap = await getDoc(doc(db, "program_kerja", prokerId));
             if (docSnap.exists()) {
                 const proker = docSnap.data();
                 const statusClass = proker.status === 'Completed' ? 'bg-green-100 text-green-800' : proker.status === 'Ongoing' ? 'bg-blue-100 text-blue-800' : 'bg-yellow-100 text-yellow-800';
@@ -750,6 +764,14 @@ if (prokerDetailModal && closeProkerDetailBtn) {
                     imageDiv.classList.remove('hidden');
                 } else {
                     imageDiv.classList.add('hidden');
+                }
+                // Add penanggung jawab if exists
+                const penanggungDiv = document.getElementById('proker-detail-penanggung');
+                if (penanggungDiv && proker.penanggungJawab) {
+                    penanggungDiv.textContent = `Penanggung Jawab: ${proker.penanggungJawab}`;
+                    penanggungDiv.classList.remove('hidden');
+                } else if (penanggungDiv) {
+                    penanggungDiv.classList.add('hidden');
                 }
                 prokerDetailModal.classList.remove('hidden');
             }
@@ -1418,6 +1440,9 @@ if (dashboardSection) { // Check if on admin.html
     if (addProkerForm) {
         addProkerForm.addEventListener('submit', async (e) => {
             e.preventDefault();
+            if (currentUserRole === ROLE.BEM) {
+                e.target.elements['proker-division-input'].value = currentUserDivision;
+            }
             if (currentUserRole !== ROLE.BEM) { if (addProkerStatus) addProkerStatus.textContent = "Akses ditolak."; return; }
             const prokerData = {
                 division: e.target.elements['proker-division-input'].value,
@@ -1426,10 +1451,11 @@ if (dashboardSection) { // Check if on admin.html
                 date: e.target.elements['proker-date-input'].value,
                 status: e.target.elements['proker-status-input'].value,
                 imageUrl: e.target.elements['proker-image-input'].value || '',
+                penanggungJawab: e.target.elements['proker-penanggung-jawab-input'].value,
                 createdAt: serverTimestamp()
             };
             try {
-                const docRef = await addDoc(collection(db, "proker"), prokerData);
+                const docRef = await addDoc(collection(db, "program_kerja"), prokerData);
                 await logActivity('proker_add', { docId: docRef.id, title: prokerData.title });
                 if (addProkerStatus) addProkerStatus.textContent = "Program Kerja berhasil ditambahkan!";
                 addProkerForm.reset();
@@ -1443,8 +1469,14 @@ if (dashboardSection) { // Check if on admin.html
 
     function loadProkerForAdmin() {
         if (!prokerListContainer) return;
-        const prokerQuery = query(collection(db, "proker"), orderBy("createdAt", "desc"));
-        prokerUnsub = onSnapshot(prokerQuery, (snapshot) => {
+        let q = collection(db, "program_kerja");
+        if (currentUserRole === ROLE.BEM) {
+            // Filter by user's division
+            q = query(q, where("division", "==", currentUserDivision), orderBy("createdAt", "desc"));
+        } else {
+            q = query(q, orderBy("createdAt", "desc"));
+        }
+        prokerUnsub = onSnapshot(q, (snapshot) => {
             let prokerHtml = '';
             if (snapshot.empty) {
                 prokerListContainer.innerHTML = '<p>Belum ada Program Kerja.</p>';
@@ -1483,7 +1515,7 @@ if (dashboardSection) { // Check if on admin.html
             if (e.target.classList.contains('delete-proker-btn')) {
                 if (currentUserRole !== ROLE.BEM) { alert("Akses ditolak."); return; }
                 if (confirm("Yakin ingin menghapus Program Kerja ini?")) {
-                    const ref = doc(db, "proker", prokerId);
+                    const ref = doc(db, "program_kerja", prokerId);
                     const snap = await getDoc(ref);
                     const title = snap.exists() ? (snap.data().title || '') : '';
                     await deleteDoc(ref);
@@ -1492,7 +1524,7 @@ if (dashboardSection) { // Check if on admin.html
             }
             if (e.target.classList.contains('edit-proker-btn')) {
                 if (currentUserRole !== ROLE.BEM) { alert("Akses ditolak."); return; }
-                const docSnap = await getDoc(doc(db, "proker", prokerId));
+                const docSnap = await getDoc(doc(db, "program_kerja", prokerId));
                 if (docSnap.exists()) {
                     const proker = docSnap.data();
                     if (editProkerForm) {
@@ -1503,6 +1535,7 @@ if (dashboardSection) { // Check if on admin.html
                         editProkerForm.elements['edit-proker-date'].value = proker.date;
                         editProkerForm.elements['edit-proker-status'].value = proker.status;
                         editProkerForm.elements['edit-proker-image'].value = proker.imageUrl || '';
+                        editProkerForm.elements['edit-proker-penanggung-jawab'].value = proker.penanggungJawab || '';
                         if (editProkerModal) editProkerModal.classList.remove('hidden');
                     }
                 }
@@ -1521,12 +1554,13 @@ if (dashboardSection) { // Check if on admin.html
                 description: e.target.elements['edit-proker-description'].value,
                 date: e.target.elements['edit-proker-date'].value,
                 status: e.target.elements['edit-proker-status'].value,
-                imageUrl: e.target.elements['edit-proker-image'].value || ''
+                imageUrl: e.target.elements['edit-proker-image'].value || '',
+                penanggungJawab: e.target.elements['edit-proker-penanggung-jawab'].value
             };
-            const prevSnap = await getDoc(doc(db, "proker", prokerId));
+            const prevSnap = await getDoc(doc(db, "program_kerja", prokerId));
             const prevData = prevSnap.exists() ? prevSnap.data() : {};
             const changes = diffObjects(prevData, updatedData);
-            await updateDoc(doc(db, "proker", prokerId), updatedData);
+            await updateDoc(doc(db, "program_kerja", prokerId), updatedData);
             await logActivity('proker_edit', { docId: prokerId, title: prevData.title || updatedData.title || '', changes });
             if (editProkerModal) editProkerModal.classList.add('hidden');
         });
